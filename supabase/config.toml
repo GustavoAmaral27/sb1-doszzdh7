@@ -1,0 +1,14 @@
+# Trecho de configuração das Edge Functions (mescle com o config.toml gerado por `supabase init`).
+
+[functions.pluggy-connect-token]
+verify_jwt = true
+
+[functions.pluggy-sync]
+verify_jwt = true
+
+[functions.assessor]
+verify_jwt = true
+
+# A Pluggy não envia JWT do Supabase; a função valida um segredo próprio.
+[functions.pluggy-webhook]
+verify_jwt = false
