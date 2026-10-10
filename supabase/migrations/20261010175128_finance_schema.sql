@@ -192,22 +192,47 @@ create policy "delete own manual transactions" on public.transactions
   for delete to authenticated using (user_id = (select auth.uid()) and source <> 'open_finance' and public.mfa_ok());
 
 -- Em transações bancárias, o usuário só pode mudar categoria/descrição.
-create function public.guard_transaction_update() returns trigger
-language plpgsql set search_path = '' as $$
+-- E nenhuma transação pode apontar para conta ou categoria de outro usuário.
+create function public.guard_transaction() returns trigger
+language plpgsql security definer set search_path = '' as $$
 begin
-  if auth.role() = 'authenticated' and old.source = 'open_finance' and (
-       new.amount <> old.amount or new.kind <> old.kind or new.occurred_on <> old.occurred_on
-    or new.account_id is distinct from old.account_id or new.external_id is distinct from old.external_id
-    or new.source <> old.source) then
-    raise exception 'Transações sincronizadas do banco não podem ter valor, data ou conta alterados';
+  if new.account_id is not null and not exists (
+       select 1 from public.accounts where id = new.account_id and user_id = new.user_id) then
+    raise exception 'Conta inválida';
   end if;
-  if new.user_id <> old.user_id then
-    raise exception 'user_id é imutável';
+  if new.category_id is not null and not exists (
+       select 1 from public.categories where id = new.category_id and (user_id is null or user_id = new.user_id)) then
+    raise exception 'Categoria inválida';
+  end if;
+  if tg_op = 'UPDATE' then
+    if new.user_id <> old.user_id then
+      raise exception 'user_id é imutável';
+    end if;
+    if auth.role() = 'authenticated' and old.source = 'open_finance' and (
+         new.amount <> old.amount or new.kind <> old.kind or new.occurred_on <> old.occurred_on
+      or new.account_id is distinct from old.account_id or new.external_id is distinct from old.external_id
+      or new.source <> old.source) then
+      raise exception 'Transações sincronizadas do banco não podem ter valor, data ou conta alterados';
+    end if;
   end if;
   return new;
 end $$;
-create trigger guard_transaction_update before update on public.transactions
-  for each row execute function public.guard_transaction_update();
+revoke all on function public.guard_transaction() from public, anon, authenticated;
+create trigger guard_transaction before insert or update on public.transactions
+  for each row execute function public.guard_transaction();
+
+-- Orçamento só para categorias visíveis ao usuário.
+create function public.guard_budget() returns trigger
+language plpgsql security definer set search_path = '' as $$
+begin
+  if not exists (select 1 from public.categories where id = new.category_id and (user_id is null or user_id = new.user_id)) then
+    raise exception 'Categoria inválida';
+  end if;
+  return new;
+end $$;
+revoke all on function public.guard_budget() from public, anon, authenticated;
+create trigger guard_budget before insert or update on public.budgets
+  for each row execute function public.guard_budget();
 
 create policy "own budgets" on public.budgets
   for all to authenticated
@@ -227,10 +252,11 @@ create function public.log_event(p_action text, p_details jsonb default '{}')
 returns void language sql security definer set search_path = '' as $$
   insert into public.audit_log (user_id, action, details)
   select auth.uid(), left(p_action, 60), coalesce(p_details, '{}')
-  where auth.uid() is not null;
+  where auth.uid() is not null and p_action like 'auth.%'; -- eventos de segurança só o servidor grava
 $$;
 revoke all on function public.log_event(text, jsonb) from public, anon;
 grant execute on function public.log_event(text, jsonb) to authenticated;
 
 revoke all on function public.mfa_ok() from public, anon;
+revoke all on function public.handle_new_user() from public, anon, authenticated;
 grant execute on function public.mfa_ok() to authenticated;

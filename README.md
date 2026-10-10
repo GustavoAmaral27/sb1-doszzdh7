@@ -42,6 +42,12 @@ de crédito são conectados pelo **Open Finance Brasil** (via [Pluggy](https://p
 - O webhook da Pluggy exige um segredo compartilhado (comparação em tempo constante) e
   não confia no conteúdo recebido: busca o item de novo na API.
 
+## Projeto Supabase
+
+Já criado: **meu-assessor-financeiro** (`hxvlfmaaaxfyiceqasvz`, região São Paulo), com o banco
+aplicado e as 4 Edge Functions publicadas. Falta só cadastrar os segredos (passo 2 abaixo) e
+ajustar as opções de autenticação (passo 1.3 e 1.4).
+
 ## Como configurar
 
 ### 1. Supabase

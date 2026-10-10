@@ -39,15 +39,15 @@ function parseAmount(text: string): number | null {
 
 function parseDate(text: string, today: Date): string {
   const d = new Date(today)
-  if (/anteontem/.test(text)) d.setDate(d.getDate() - 2)
-  else if (/ontem/.test(text)) d.setDate(d.getDate() - 1)
+  if (/anteontem/.test(text)) d.setUTCDate(d.getUTCDate() - 2)
+  else if (/ontem/.test(text)) d.setUTCDate(d.getUTCDate() - 1)
   else {
     const m = text.match(/\bdia (\d{1,2})(?:\/(\d{1,2}))?\b/) ?? text.match(/\b(\d{1,2})\/(\d{1,2})\b/)
     if (m) {
       const day = Number(m[1])
-      const month = m[2] ? Number(m[2]) - 1 : d.getMonth()
-      const candidate = new Date(d.getFullYear(), month, day)
-      if (candidate.getDate() === day && candidate <= today) return candidate.toISOString().slice(0, 10)
+      const month = m[2] ? Number(m[2]) - 1 : d.getUTCMonth()
+      const candidate = new Date(Date.UTC(d.getUTCFullYear(), month, day, 12))
+      if (candidate.getUTCDate() === day && candidate <= today) return candidate.toISOString().slice(0, 10)
     }
   }
   return d.toISOString().slice(0, 10)

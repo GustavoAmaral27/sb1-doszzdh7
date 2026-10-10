@@ -3,6 +3,13 @@
 import { handle, json, requireUser, HttpError, admin } from '../_shared/http.ts'
 import { parseMessage } from '../_shared/parser.ts'
 
+// O servidor roda em UTC; as datas do usuário seguem o horário de Brasília.
+function todayInBrazil(): Date {
+  const d = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Sao_Paulo' }))
+  d.setUTCHours(12, 0, 0, 0)
+  return d
+}
+
 const brl = (n: number) => n.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
 const HELP = [
   'Oi! Sou seu assessor financeiro. Você pode me mandar coisas como:',
@@ -29,7 +36,9 @@ Deno.serve(handle(async (req) => {
 
   await admin.from('assessor_messages').insert({ user_id: user.id, role: 'user', content: message.trim() })
 
-  const intent = parseMessage(message)
+  const today = todayInBrazil()
+  const todayIso = today.toISOString().slice(0, 10)
+  const intent = parseMessage(message, today)
   let reply = ''
   let transactionId: string | null = null
 
@@ -47,15 +56,14 @@ Deno.serve(handle(async (req) => {
     }).select('id').single()
     if (error) throw error
     transactionId = tx.id
-    const when = intent.date === new Date().toISOString().slice(0, 10) ? 'hoje' : intent.date.split('-').reverse().join('/')
+    const when = intent.date === todayIso ? 'hoje' : intent.date.split('-').reverse().join('/')
     reply = intent.kind === 'expense'
       ? `✅ Despesa registrada!\n💸 ${brl(intent.amount)} — ${intent.description}\n🏷️ ${intent.category} · 📅 ${when}`
       : `✅ Receita registrada!\n💰 ${brl(intent.amount)} — ${intent.description}\n🏷️ ${intent.category} · 📅 ${when}`
   } else if (intent.type === 'summary') {
-    const now = new Date()
-    const start = new Date(now)
-    if (intent.period === 'week') start.setDate(now.getDate() - 6)
-    else if (intent.period === 'month') start.setDate(1)
+    const start = new Date(today)
+    if (intent.period === 'week') start.setUTCDate(today.getUTCDate() - 6)
+    else if (intent.period === 'month') start.setUTCDate(1)
     const { data: rows } = await admin.from('transactions')
       .select('amount, kind, categories(name)')
       .eq('user_id', user.id).gte('occurred_on', start.toISOString().slice(0, 10))
