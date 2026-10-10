@@ -2,7 +2,8 @@
 // autenticação do usuário (incluindo exigência do segundo fator).
 import { createClient, type SupabaseClient, type User } from 'npm:@supabase/supabase-js@2.45.4'
 
-const allowedOrigins = (Deno.env.get('ALLOWED_ORIGINS') ?? '')
+// Sites autorizados a chamar as funções. Sem configuração, só o ambiente local.
+const allowedOrigins = (Deno.env.get('ALLOWED_ORIGINS') || 'http://localhost:5173')
   .split(',')
   .map((o) => o.trim())
   .filter(Boolean)
