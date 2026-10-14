@@ -1,183 +1,345 @@
 <!doctype html>
 <html lang="pt-BR"><head><meta charset="utf-8">
 <style>
-:root{--g1:#0b3d22;--g2:#13703a;--g3:#1fa152;--or:#ff7a1a;--or2:#ffa04d;--ink:#0a1a12;--w:#fff}
+@property --n{syntax:'<integer>';inherits:false;initial-value:0}
+:root{--g0:#041a0d;--g1:#0b3d22;--g2:#13703a;--g3:#22b25c;--or:#ff7a1a;--or2:#ffab5e;--ink:#0a1a12;--red:#ff4d4d}
 *{margin:0;padding:0;box-sizing:border-box}
-html,body{width:1080px;height:1920px;overflow:hidden;background:#06140c;font-family:Inter,sans-serif;color:#fff}
+html,body{width:1080px;height:1920px;overflow:hidden;background:var(--g0);font-family:Inter,sans-serif;color:#fff}
 .stage{position:relative;width:1080px;height:1920px;overflow:hidden}
-/* backgrounds */
+
+/* ---------- background ---------- */
 .bg{position:absolute;inset:0}
-.bg-dark{background:radial-gradient(1200px 900px at 50% 30%,#14281d 0%,#06140c 70%)}
-.bg-green{background:radial-gradient(1300px 1100px at 30% 20%,#25b35d 0%,#13703a 45%,#0b3d22 100%);opacity:0;animation:fade 1s ease both;animation-delay:7.6s}
-.grid{position:absolute;inset:-200px;background-image:linear-gradient(rgba(255,255,255,.06) 2px,transparent 2px),linear-gradient(90deg,rgba(255,255,255,.06) 2px,transparent 2px);background-size:120px 120px;animation:pan 36s linear both;transform:perspective(900px) rotateX(55deg) translateY(300px);transform-origin:50% 100%;top:900px}
-@keyframes pan{from{background-position:0 0}to{background-position:0 1440px}}
-.glow{position:absolute;width:900px;height:900px;border-radius:50%;filter:blur(120px);opacity:.45}
-.glow.a{background:var(--or);left:-400px;top:-300px;animation:drift 36s linear both}
-.glow.b{background:#2fe07a;right:-450px;bottom:-200px;opacity:.3;animation:drift 36s linear reverse both}
-@keyframes drift{0%{transform:translate(0,0)}50%{transform:translate(300px,500px)}100%{transform:translate(0,900px)}}
-.chart{position:absolute;left:0;right:0;bottom:0;height:700px;opacity:.18}
-.chart polyline{fill:none;stroke:#fff;stroke-width:6;stroke-dasharray:3000;stroke-dashoffset:3000;animation:draw 30s linear both}
-@keyframes draw{to{stroke-dashoffset:0}}
-.dots i{position:absolute;width:8px;height:8px;border-radius:50%;background:#fff;opacity:.35;animation:rise linear both}
-@keyframes rise{from{transform:translateY(0)}to{transform:translateY(-2200px)}}
+.bg-dark{background:radial-gradient(1100px 1000px at 50% 35%,#123222 0%,#061a0f 55%,#020a05 100%)}
+.bg-red{background:radial-gradient(900px 900px at 50% 40%,rgba(255,60,40,.22),transparent 70%);opacity:0;animation:redwin 8s linear 4s both}
+@keyframes redwin{0%{opacity:0}10%{opacity:1}30%{opacity:.5}50%{opacity:1}70%{opacity:.6}90%{opacity:1}100%{opacity:0}}
+.bg-green{background:radial-gradient(1400px 1200px at 30% 15%,#2cc266 0%,#15803f 40%,#0b4424 80%,#062b16 100%);opacity:0;animation:fade .6s ease 11.8s both}
+.glow{position:absolute;border-radius:50%;filter:blur(140px)}
+.glow.a{width:1000px;height:1000px;background:var(--or);opacity:.35;left:-450px;top:-350px;animation:drift 50s linear both}
+.glow.b{width:1100px;height:1100px;background:#3dff8f;opacity:.18;right:-500px;bottom:-300px;animation:drift 50s linear reverse both}
+@keyframes drift{0%{transform:translate(0,0)}50%{transform:translate(380px,700px)}100%{transform:translate(0,1200px)}}
+.floor{position:absolute;left:-300px;right:-300px;top:1150px;height:1400px;background-image:linear-gradient(rgba(255,255,255,.07) 2px,transparent 2px),linear-gradient(90deg,rgba(255,255,255,.07) 2px,transparent 2px);background-size:120px 120px;transform:perspective(800px) rotateX(62deg);transform-origin:50% 0;animation:pan 50s linear both;-webkit-mask-image:linear-gradient(transparent,#000 40%)}
+@keyframes pan{to{background-position:0 3000px}}
+.dots i{position:absolute;border-radius:50%;background:#fff;animation:rise linear both;box-shadow:0 0 12px rgba(255,255,255,.8)}
+@keyframes rise{from{transform:translateY(0)}to{transform:translateY(-2600px)}}
+.vignette{position:absolute;inset:0;background:radial-gradient(ellipse at center,transparent 50%,rgba(0,0,0,.55) 100%);pointer-events:none}
+.grain{position:absolute;inset:-100px;opacity:.09;mix-blend-mode:overlay;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='300' height='300' filter='url(%23n)'/></svg>");animation:grain 1s steps(8) infinite}
+@keyframes grain{0%{transform:translate(0,0)}25%{transform:translate(-40px,30px)}50%{transform:translate(30px,-50px)}75%{transform:translate(-20px,-30px)}100%{transform:translate(40px,20px)}}
+.leak{position:absolute;width:1400px;height:500px;left:-200px;border-radius:50%;background:linear-gradient(90deg,transparent,rgba(255,170,90,.55),transparent);filter:blur(60px);opacity:0;mix-blend-mode:screen;animation:leak 1.4s ease both}
+@keyframes leak{0%{opacity:0;transform:translateX(-500px) rotate(-20deg)}40%{opacity:1}100%{opacity:0;transform:translateX(600px) rotate(-20deg)}}
 
-/* scenes */
-.scene{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 90px;text-align:center;opacity:0;animation:scene var(--len) linear both;animation-delay:var(--s)}
-@keyframes scene{0%{opacity:0}4%{opacity:1}94%{opacity:1}100%{opacity:0}}
+/* ---------- transitions ---------- */
+.sweep{position:absolute;top:-300px;bottom:-300px;left:-400px;width:1900px;transform:translateX(-140%) skewX(-14deg);animation:sweep .75s cubic-bezier(.7,0,.3,1) both;z-index:50}
+.sweep.o{background:linear-gradient(90deg,var(--or),#ff9a3c)}
+.sweep.g{background:linear-gradient(90deg,#0e5a2e,#1a8f47)}
+.sweep.wh{background:#fff}
+@keyframes sweep{from{transform:translateX(-140%) skewX(-14deg)}to{transform:translateX(140%) skewX(-14deg)}}
+.flash{position:absolute;inset:0;background:#fff;opacity:0;z-index:49;animation:flash .5s ease-out forwards}
+@keyframes flash{0%{opacity:.85}100%{opacity:0}}
+
+/* ---------- scenes ---------- */
+.scene{position:absolute;inset:0;opacity:0;animation:sin .3s ease var(--s) both,sout .3s ease calc(var(--s) + var(--len) - .3s) forwards}
+@keyframes sin{from{opacity:0}to{opacity:1}}
+@keyframes sout{from{opacity:1}to{opacity:0}}
+.cam{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 80px 140px;text-align:center;animation:cam var(--len) linear var(--s) both}
+@keyframes cam{from{transform:scale(1.07)}to{transform:scale(1)}}
 .a{animation-duration:.8s;animation-timing-function:cubic-bezier(.16,1,.3,1);animation-fill-mode:both;animation-delay:calc(var(--s) + var(--d,0s))}
-.up{animation-name:up}@keyframes up{from{opacity:0;transform:translateY(90px)}to{opacity:1;transform:none}}
-.pop{animation-name:pop}@keyframes pop{0%{opacity:0;transform:scale(.4)}70%{opacity:1;transform:scale(1.06)}100%{transform:scale(1)}}
-.left{animation-name:left}@keyframes left{from{opacity:0;transform:translateX(-160px)}to{opacity:1;transform:none}}
-.right{animation-name:right}@keyframes right{from{opacity:0;transform:translateX(160px)}to{opacity:1;transform:none}}
-.blur{animation-name:blur;animation-duration:1s}@keyframes blur{from{opacity:0;filter:blur(30px);transform:scale(1.25)}to{opacity:1;filter:none;transform:none}}
+.up{animation-name:up}@keyframes up{from{opacity:0;transform:translateY(80px)}to{opacity:1;transform:none}}
+.pop{animation-name:pop;animation-duration:.7s}@keyframes pop{0%{opacity:0;transform:scale(.3)}65%{opacity:1;transform:scale(1.08)}100%{transform:scale(1)}}
+.left{animation-name:left}@keyframes left{from{opacity:0;transform:translateX(-180px)}to{opacity:1;transform:none}}
+.right{animation-name:right}@keyframes right{from{opacity:0;transform:translateX(180px)}to{opacity:1;transform:none}}
+.blur{animation-name:blur;animation-duration:1.1s}@keyframes blur{from{opacity:0;filter:blur(40px);transform:scale(1.4);letter-spacing:40px}to{opacity:1;filter:none;transform:none}}
 .wipe{animation-name:wipe}@keyframes wipe{from{clip-path:inset(0 100% 0 0)}to{clip-path:inset(0 0 0 0)}}
+.flip{animation-name:flip}@keyframes flip{from{opacity:0;transform:perspective(900px) rotateX(-80deg) translateY(40px)}to{opacity:1;transform:none}}
 @keyframes fade{from{opacity:0}to{opacity:1}}
+.w{display:inline-block;animation-name:word;animation-duration:.7s}
+@keyframes word{from{opacity:0;transform:translateY(70px) rotateX(-70deg);filter:blur(12px)}to{opacity:1;transform:none;filter:none}}
 
-h1{font-weight:900;font-size:118px;line-height:1.02;letter-spacing:-3px}
-h2{font-weight:800;font-size:92px;line-height:1.05;letter-spacing:-2px}
+/* ---------- type ---------- */
+h1{font-weight:900;font-size:112px;line-height:1.02;letter-spacing:-4px}
+h2{font-weight:800;font-size:88px;line-height:1.06;letter-spacing:-2.5px}
 .or{color:var(--or)}
-.hl{background:var(--or);color:#fff;padding:0 18px;border-radius:14px;display:inline-block}
-.kicker{font-weight:700;font-size:38px;letter-spacing:10px;text-transform:uppercase;color:var(--or2);margin-bottom:40px}
-.sub{font-size:48px;font-weight:500;line-height:1.3;opacity:.9;margin-top:50px}
+.grad{background:linear-gradient(90deg,#ffb36b,#ff7a1a 50%,#ffd2a3);-webkit-background-clip:text;color:transparent}
+.hl{position:relative;display:inline-block;padding:0 22px;z-index:0}
+.hl:before{content:"";position:absolute;inset:6px 0 4px;background:var(--or);border-radius:16px;z-index:-1;transform:scaleX(0);transform-origin:left;animation:hlx .55s cubic-bezier(.7,0,.3,1) both;animation-delay:calc(var(--s) + var(--hd,.5s))}
+@keyframes hlx{to{transform:scaleX(1)}}
+.kicker{display:inline-flex;align-items:center;gap:18px;font-weight:800;font-size:34px;letter-spacing:9px;text-transform:uppercase;color:var(--or2);margin-bottom:40px;padding:16px 34px;border:2px solid rgba(255,171,94,.45);border-radius:999px;background:rgba(255,122,26,.08)}
+.kicker:before{content:"";width:14px;height:14px;border-radius:50%;background:var(--or);box-shadow:0 0 18px var(--or)}
+.sub{font-size:46px;font-weight:500;line-height:1.35;color:rgba(255,255,255,.88);margin-top:46px}
+.glass{background:linear-gradient(160deg,rgba(255,255,255,.16),rgba(255,255,255,.04));border:2px solid rgba(255,255,255,.18);box-shadow:0 30px 80px rgba(0,0,0,.35),inset 0 2px 0 rgba(255,255,255,.2);border-radius:36px;backdrop-filter:blur(6px)}
 
-/* pains */
-.pain{display:flex;align-items:center;gap:34px;width:880px;background:rgba(255,255,255,.07);border:2px solid rgba(255,255,255,.12);border-radius:32px;padding:38px 46px;margin:18px 0;font-size:52px;font-weight:700;text-align:left}
-.pain b{flex:none;width:86px;height:86px;border-radius:50%;background:#e2483b;display:grid;place-items:center;font-size:54px}
-.strike{position:relative}
-.strike:after{content:"";position:absolute;left:-6px;right:-6px;top:52%;height:8px;background:var(--or);border-radius:4px;transform:scaleX(0);transform-origin:left;animation:strk .5s ease both;animation-delay:calc(var(--s) + var(--d) + 1.4s)}
-@keyframes strk{to{transform:scaleX(1)}}
+/* S2 notifications */
+.notifs{position:relative;width:900px;margin-top:100px}
+.nt{display:flex;align-items:center;gap:28px;width:900px;padding:28px 34px;margin:16px 0;border-radius:34px;background:rgba(245,247,246,.95);color:var(--ink);text-align:left;box-shadow:0 20px 60px rgba(0,0,0,.45)}
+.nt .ic{flex:none;width:92px;height:92px;border-radius:24px;display:grid;place-items:center;font-size:50px}
+.nt .tt{font-weight:800;font-size:38px;display:flex;justify-content:space-between}
+.nt .tt small{font-weight:600;font-size:28px;color:#8a9a90}
+.nt p{font-size:34px;color:#3b4d42;margin-top:4px;font-weight:500}
+.notpop{animation-name:notpop;animation-duration:.6s}
+@keyframes notpop{0%{opacity:0;transform:translateY(-60px) scale(.85)}60%{opacity:1;transform:translateY(8px) scale(1.02)}80%{transform:translateX(-10px)}90%{transform:translateX(8px)}100%{transform:none}}
+.badge99{position:absolute;top:-70px;right:-30px;min-width:150px;height:110px;padding:0 28px;border-radius:60px;background:var(--red);font-weight:900;font-size:60px;display:grid;place-items:center;box-shadow:0 0 0 10px rgba(255,77,77,.25),0 20px 50px rgba(0,0,0,.4);z-index:3}
+.cnt{animation:cnt 2.6s cubic-bezier(.3,0,.2,1) both;animation-delay:calc(var(--s) + var(--cd,0s));counter-reset:n var(--n)}
+.cnt:after{content:counter(n) attr(data-suf)}
+@keyframes cnt{from{--n:0}to{--n:var(--to)}}
+.shake{animation:shake .12s linear infinite;animation-delay:calc(var(--s) + 2.6s)}
+@keyframes shake{0%,100%{transform:translate(0,0)}25%{transform:translate(-5px,3px)}50%{transform:translate(4px,-4px)}75%{transform:translate(-3px,-2px)}}
 
-/* logo */
-.logo{display:flex;flex-direction:column;align-items:center}
-.badge{width:420px;height:420px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#2bbd64,#13703a 70%);box-shadow:0 0 0 14px rgba(255,255,255,.12),0 40px 120px rgba(0,0,0,.45);display:grid;place-items:center}
-.bars rect{transform-box:fill-box;transform-origin:bottom;animation:bar .6s cubic-bezier(.16,1,.3,1) both}
-@keyframes bar{from{transform:scaleY(0)}to{transform:scaleY(1)}}
-.arrow{stroke-dasharray:500;stroke-dashoffset:500;animation:draw2 .8s ease both}
-@keyframes draw2{to{stroke-dashoffset:0}}
-.brand{font-weight:900;font-size:170px;letter-spacing:-4px;margin-top:60px;line-height:1}
+/* S3 cost bars */
+.costs{display:flex;gap:60px;align-items:flex-end;height:560px;margin-top:70px}
+.cost{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;width:220px;height:100%}
+.cost .bar{width:170px;border-radius:26px 26px 10px 10px;background:linear-gradient(180deg,#ff6b5b,#b4231a);box-shadow:0 0 50px rgba(255,77,77,.45);transform-origin:bottom;animation:grow 1.2s cubic-bezier(.16,1,.3,1) both;animation-delay:calc(var(--s) + var(--d));position:relative}
+.cost .bar:before{content:"▲";position:absolute;top:-80px;left:0;right:0;font-size:56px;color:var(--red)}
+@keyframes grow{from{transform:scaleY(0)}to{transform:scaleY(1)}}
+.cost span{font-size:38px;font-weight:800;margin-top:26px}
+
+/* S4 logo */
+.badge{position:relative;width:440px;height:440px;border-radius:50%;background:radial-gradient(circle at 35% 28%,#3ad476,#15803f 65%,#0d5a2c);box-shadow:0 0 0 16px rgba(255,255,255,.12),0 0 0 34px rgba(255,255,255,.05),0 50px 140px rgba(0,0,0,.5);display:grid;place-items:center}
+.bars rect{transform-box:fill-box;transform-origin:bottom;animation:grow .7s cubic-bezier(.16,1,.3,1) both}
+.arrow{stroke-dasharray:200;stroke-dashoffset:200;animation:dash .7s ease both}
+@keyframes dash{to{stroke-dashoffset:0}}
+.rays{position:absolute;width:1800px;height:1800px;left:50%;top:50%;margin:-900px 0 0 -900px;background:repeating-conic-gradient(from 0deg,rgba(255,255,255,.10) 0deg 6deg,transparent 6deg 18deg);-webkit-mask-image:radial-gradient(circle,#000 10%,transparent 65%);animation:spin 8s linear both,fade 1s ease both;animation-delay:12s}
+@keyframes spin{to{transform:rotate(90deg)}}
+.ring{position:absolute;left:50%;top:50%;width:440px;height:440px;margin:-220px 0 0 -220px;border-radius:50%;border:8px solid var(--or);opacity:0;animation:ring 1.3s cubic-bezier(.1,.8,.3,1) both}
+@keyframes ring{0%{opacity:1;transform:scale(.8)}100%{opacity:0;transform:scale(3)}}
+.brand{font-weight:900;font-size:190px;letter-spacing:-6px;margin-top:70px;line-height:1;text-shadow:0 20px 60px rgba(0,0,0,.35)}
 .brand span{color:var(--or)}
-.tag{font-weight:700;font-size:42px;letter-spacing:7px;white-space:nowrap;text-transform:uppercase;margin-top:24px;opacity:.95}
-.shine{position:absolute;inset:0;background:linear-gradient(110deg,transparent 40%,rgba(255,255,255,.35) 50%,transparent 60%);background-size:300% 100%;animation:shine 1.4s ease both;mix-blend-mode:overlay}
-@keyframes shine{from{background-position:100% 0}to{background-position:-50% 0}}
+.tag{font-weight:700;font-size:42px;letter-spacing:9px;white-space:nowrap;text-transform:uppercase;margin-top:26px}
+.line{width:520px;height:6px;background:linear-gradient(90deg,transparent,var(--or),transparent);margin-top:34px}
+.shine{position:relative;overflow:hidden}
+.shine:after{content:"";position:absolute;inset:0;background:linear-gradient(110deg,transparent 35%,rgba(255,255,255,.75) 50%,transparent 65%);transform:translateX(-120%);animation:shn 1.2s ease both;animation-delay:calc(var(--s) + var(--sd))}
+@keyframes shn{to{transform:translateX(120%)}}
 
-/* services */
-.svc{width:900px;display:flex;align-items:center;gap:40px;background:#fff;color:var(--ink);border-radius:36px;padding:44px 50px;margin:20px 0;box-shadow:0 30px 80px rgba(0,0,0,.3);text-align:left}
-.svc .ic{flex:none;width:130px;height:130px;border-radius:30px;background:linear-gradient(135deg,var(--or),#ff9d3d);display:grid;place-items:center}
-.svc h3{font-size:62px;font-weight:900;letter-spacing:-1px;color:var(--g2)}
-.svc p{font-size:34px;font-weight:500;color:#41584a;margin-top:6px}
+/* S5 dashboard */
+.dash{width:900px;padding:46px 50px;margin-top:60px;text-align:left}
+.dash .hd{display:flex;justify-content:space-between;align-items:center;font-size:32px;font-weight:700;color:rgba(255,255,255,.85)}
+.dash .live{font-size:26px;padding:8px 18px;border-radius:99px;background:rgba(37,211,102,.2);color:#7dffb0}
+.dash svg{width:100%;height:380px;margin-top:20px;overflow:visible}
+.dash .lg{display:flex;gap:44px;font-size:30px;font-weight:600;margin-top:16px}
+.dash .lg i{display:inline-block;width:40px;height:10px;border-radius:5px;vertical-align:middle;margin-right:14px}
+.draw{stroke-dasharray:1400;stroke-dashoffset:1400;animation:dash 1.8s cubic-bezier(.4,0,.2,1) both}
 
-/* triple */
-.big{font-weight:900;font-size:128px;line-height:1.05;letter-spacing:-4px;text-transform:uppercase}
-.big small{display:block;font-size:64px;letter-spacing:2px;opacity:.85;font-weight:700}
+/* S6 services */
+.svc{width:920px;padding:38px 44px;margin:16px 0;text-align:left;display:flex;gap:36px;align-items:center}
+.svc .ic{flex:none;width:136px;height:136px;border-radius:34px;background:linear-gradient(135deg,#ff9b42,#ff6a00);display:grid;place-items:center;box-shadow:0 18px 40px rgba(255,106,0,.45)}
+.svc h3{font-size:62px;font-weight:900;letter-spacing:-1.5px}
+.chips{display:flex;flex-wrap:wrap;gap:12px;margin-top:14px}
+.chip{font-size:28px;font-weight:700;padding:10px 20px;border-radius:99px;background:rgba(255,255,255,.95);color:var(--g2)}
+.chip:before{content:"✓ ";color:var(--or)}
 
-/* counter */
-.num{font-weight:900;font-size:520px;line-height:.85;letter-spacing:-20px;background:linear-gradient(180deg,#fff,#ffd0a8);-webkit-background-clip:text;color:transparent}
+/* S7 compare */
+.cmp{width:920px;padding:40px 46px;text-align:left;margin:16px 0}
+.cmp h4{font-size:40px;font-weight:900;letter-spacing:3px;text-transform:uppercase;margin-bottom:20px;display:flex;align-items:center;gap:18px}
+.cmp li{list-style:none;font-size:40px;font-weight:600;margin:16px 0;display:flex;gap:22px;align-items:center}
+.cmp li b{flex:none;width:58px;height:58px;border-radius:50%;display:grid;place-items:center;font-size:32px}
+.cmp.bad{opacity:.85;background:rgba(0,0,0,.25);border:2px solid rgba(255,90,80,.35);border-radius:36px}
+.cmp.bad b{background:rgba(255,77,77,.9)}
+.cmp.good{background:linear-gradient(160deg,#fff,#eafff2);color:var(--ink);border-radius:36px;box-shadow:0 0 0 6px rgba(255,122,26,.7),0 40px 100px rgba(0,0,0,.4)}
+.cmp.good b{background:var(--g3);color:#fff}
+.cmp.good h4{color:var(--g2)}
+.vs{font-weight:900;font-size:54px;width:120px;height:120px;border-radius:50%;background:var(--or);display:grid;place-items:center;margin:-46px 0;z-index:2;position:relative;box-shadow:0 10px 40px rgba(0,0,0,.4)}
 
-/* cta */
-.wa{display:flex;align-items:center;gap:30px;background:#25d366;color:#fff;border-radius:999px;padding:38px 70px;font-size:66px;font-weight:900;margin-top:60px;box-shadow:0 30px 80px rgba(0,0,0,.35)}
-.pulse{animation:pulse 1.2s ease-in-out infinite;animation-delay:calc(var(--s) + 1.5s)}
-@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
-.handle{font-size:46px;font-weight:700;margin-top:46px;opacity:.95}
-.lowbar{position:absolute;left:0;right:0;bottom:0;height:16px;background:var(--or);transform:scaleX(0);transform-origin:left;animation:bar2 36s linear both}
-@keyframes bar2{to{transform:scaleX(1)}}
+/* S8 steps */
+.steps{position:relative;width:900px;margin-top:40px;text-align:left}
+.steps .rail{position:absolute;left:66px;top:70px;bottom:70px;width:8px;border-radius:4px;background:linear-gradient(var(--or),#ffd2a3);transform-origin:top;animation:grow2 1.6s cubic-bezier(.4,0,.2,1) both;animation-delay:calc(var(--s) + .5s)}
+@keyframes grow2{from{transform:scaleY(0)}to{transform:scaleY(1)}}
+.st{position:relative;display:flex;gap:40px;align-items:center;margin:40px 0}
+.st .n{flex:none;width:140px;height:140px;border-radius:50%;background:#fff;color:var(--g2);font-size:70px;font-weight:900;display:grid;place-items:center;box-shadow:0 0 0 12px rgba(255,122,26,.35),0 20px 50px rgba(0,0,0,.35)}
+.st h3{font-size:54px;font-weight:900;letter-spacing:-1px}
+.st p{font-size:34px;color:rgba(255,255,255,.82);margin-top:6px;font-weight:500}
+
+/* S9 triple */
+.big{font-weight:900;font-size:132px;line-height:1;letter-spacing:-4px;text-transform:uppercase;margin:26px 0}
+.big small{display:block;font-size:56px;letter-spacing:12px;font-weight:800;color:rgba(255,255,255,.8);margin-bottom:10px}
+.beatflash{position:absolute;inset:0;background:radial-gradient(circle,rgba(255,160,80,.35),transparent 60%);opacity:0;animation:flash .5s ease-out forwards}
+
+/* S10 years */
+.num{font-weight:900;font-size:560px;line-height:.82;letter-spacing:-20px;background:linear-gradient(180deg,#fff 20%,#ffb36b);-webkit-background-clip:text;color:transparent;filter:drop-shadow(0 30px 60px rgba(0,0,0,.35))}
+.pills{display:flex;gap:18px;margin-top:50px;flex-wrap:wrap;justify-content:center}
+.pill{font-size:34px;font-weight:800;padding:18px 30px;border-radius:99px}
+
+/* S11 CTA */
+.wa{position:relative;display:flex;align-items:center;gap:28px;background:linear-gradient(180deg,#2fe377,#1fb556);color:#fff;border-radius:999px;padding:36px 64px;font-size:64px;font-weight:900;box-shadow:0 0 0 10px rgba(37,211,102,.25),0 30px 80px rgba(0,0,0,.4)}
+.pulse{animation:pulse 1s ease-in-out infinite;animation-delay:calc(var(--s) + 1.4s)}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
+.tap{position:absolute;right:120px;bottom:-120px;font-size:130px;animation:tap 1.4s cubic-bezier(.4,0,.2,1) both;animation-delay:calc(var(--s) + 2.6s);filter:drop-shadow(0 10px 20px rgba(0,0,0,.5))}
+@keyframes tap{0%{opacity:0;transform:translate(160px,200px)}50%{opacity:1;transform:translate(0,0)}65%{transform:translate(0,0) scale(.85)}80%,100%{opacity:1;transform:translate(0,0) scale(1)}}
+.ripple{position:absolute;right:170px;top:30px;width:120px;height:120px;border-radius:50%;border:6px solid #fff;opacity:0;animation:ring .9s ease-out both;animation-delay:calc(var(--s) + 3.5s)}
+.cta-top{font-weight:800;font-size:38px;letter-spacing:8px;text-transform:uppercase;padding:18px 36px;border-radius:99px;background:var(--or);margin-top:50px;margin-bottom:50px;box-shadow:0 14px 40px rgba(255,122,26,.5)}
+.handle{display:flex;align-items:center;gap:18px;font-size:44px;font-weight:800;margin-top:50px}
+.progress{position:absolute;left:0;bottom:0;height:12px;width:100%;background:linear-gradient(90deg,var(--or),#ffd2a3);transform:scaleX(0);transform-origin:left;animation:prog 50s linear both;z-index:60}
+@keyframes prog{to{transform:scaleX(1)}}
 </style></head><body><div class="stage">
 
 <div class="bg bg-dark"></div>
+<div class="bg bg-red"></div>
 <div class="bg bg-green"></div>
 <div class="glow a"></div><div class="glow b"></div>
-<div class="grid"></div>
-<svg class="chart" viewBox="0 0 1080 700" preserveAspectRatio="none"><polyline points="0,640 120,600 220,620 330,520 440,550 560,420 680,450 790,300 900,330 1080,120"/></svg>
+<div class="floor"></div>
 <div class="dots" id="dots"></div>
 
-<!-- 1 Hook 0-4 -->
-<section class="scene" style="--s:0s;--len:4s">
-  <div class="kicker a up" style="--d:.2s">Contador,</div>
-  <h1 class="a up" style="--d:.45s">seu escritório</h1>
-  <h1 class="a up" style="--d:.7s">vive <span class="or">apagando</span></h1>
-  <h1 class="a up" style="--d:.95s"><span class="hl">incêndio?</span> 🔥</h1>
-</section>
+<!-- S1 HOOK 0-4 -->
+<section class="scene" style="--s:0s;--len:4s"><div class="cam">
+  <div class="kicker a up" style="--d:.15s">Contador</div>
+  <h1 class="words" data-d=".4">seu escritório</h1>
+  <h1 class="a pop" style="--d:1.0s;margin-top:14px">vive <span class="hl" style="--hd:1.3s">apagando</span></h1>
+  <h1 class="a up" style="--d:1.6s;margin-top:10px"><span class="grad">incêndio?</span> <span class="a pop" style="--d:2s;display:inline-block">🔥</span></h1>
+  <p class="sub a up" style="--d:2.3s">O dia inteiro. Todos os dias.</p>
+</div></section>
 
-<!-- 2 Pains 4-8 -->
-<section class="scene" style="--s:4s;--len:4s">
-  <h2 class="a up" style="--d:.1s;margin-bottom:50px">O problema não é<br>falta de clientes…</h2>
-  <div class="pain a left" style="--d:.5s"><b>✕</b><span class="strike" style="--d:.5s">Equipe sobrecarregada</span></div>
-  <div class="pain a right" style="--d:.8s"><b>✕</b><span class="strike" style="--d:.8s">Custos que só crescem</span></div>
-  <div class="pain a left" style="--d:1.1s"><b>✕</b><span class="strike" style="--d:1.1s">Prazos sempre no limite</span></div>
-</section>
+<!-- S2 CHAOS 4-8 -->
+<section class="scene" style="--s:4s;--len:4s"><div class="cam">
+  <h2 class="words" data-d=".05" style="font-size:76px">Prazos, folha, SPED, eSocial…</h2>
+  <h2 class="a up or" style="--d:.45s;font-size:76px">tudo ao mesmo tempo.</h2>
+  <div class="notifs shake">
+    <div class="badge99 cnt a pop" style="--d:.4s;--cd:.5s;--to:99" data-suf="+"></div>
+    <div class="nt a notpop" style="--d:.5s"><div class="ic" style="background:#ffe1cc">📞</div><div style="flex:1"><div class="tt">Cliente <small>agora</small></div><p>“Preciso disso pra hoje!”</p></div></div>
+    <div class="nt a notpop" style="--d:1s"><div class="ic" style="background:#ffd6d6">📅</div><div style="flex:1"><div class="tt">Prazo <small>agora</small></div><p>SPED Fiscal vence amanhã</p></div></div>
+    <div class="nt a notpop" style="--d:1.5s"><div class="ic" style="background:#dff1ff">💼</div><div style="flex:1"><div class="tt">Folha de pagamento <small>agora</small></div><p>Fechamento atrasado</p></div></div>
+    <div class="nt a notpop" style="--d:2s"><div class="ic" style="background:#fff3c4">⚠️</div><div style="flex:1"><div class="tt">eSocial <small>agora</small></div><p>Eventos pendentes de envio</p></div></div>
+    <div class="nt a notpop" style="--d:2.5s"><div class="ic" style="background:#e7e1ff">👥</div><div style="flex:1"><div class="tt">Equipe <small>agora</small></div><p>“Não vamos dar conta…”</p></div></div>
+  </div>
+</div></section>
 
-<!-- 3 Logo 8-12 -->
-<section class="scene" style="--s:8s;--len:4s">
-  <div class="logo">
+<!-- S3 COST 8-12 -->
+<section class="scene" style="--s:8s;--len:4s"><div class="cam">
+  <h2 class="words" data-d=".05" style="font-size:80px">O problema não é falta de clientes.</h2>
+  <h2 class="a up" style="--d:.7s;margin-top:34px;font-size:68px;color:rgba(255,255,255,.9)">É o quanto custa manter<br>toda a <span class="hl" style="--hd:1.1s;color:#fff">operação.</span></h2>
+  <div class="costs">
+    <div class="cost"><div class="bar" style="--d:1.2s;height:300px"></div><span>Custos</span></div>
+    <div class="cost"><div class="bar" style="--d:1.4s;height:400px"></div><span>Estrutura</span></div>
+    <div class="cost"><div class="bar" style="--d:1.6s;height:490px"></div><span>Preocupações</span></div>
+  </div>
+</div></section>
+
+<!-- S4 LOGO 12-16 -->
+<section class="scene" style="--s:12s;--len:4s"><div class="rays"></div><div class="cam">
+  <div style="position:relative">
+    <div class="ring" style="animation-delay:12.15s"></div>
+    <div class="ring" style="animation-delay:12.4s;border-color:#fff"></div>
     <div class="badge a pop" style="--d:.1s">
-      <svg width="270" height="270" viewBox="0 0 100 100">
-        <g class="bars" fill="#0d2a1a">
-          <rect x="16" y="62" width="11" height="22" rx="2" style="animation-delay:8.5s"/>
-          <rect x="32" y="50" width="11" height="34" rx="2" style="animation-delay:8.6s"/>
-          <rect x="48" y="38" width="11" height="46" rx="2" style="animation-delay:8.7s"/>
-          <rect x="64" y="24" width="11" height="60" rx="2" style="animation-delay:8.8s"/>
+      <svg width="280" height="280" viewBox="0 0 100 100">
+        <g class="bars" fill="#0b2a18">
+          <rect x="16" y="62" width="11" height="22" rx="2" style="animation-delay:12.4s"/>
+          <rect x="32" y="50" width="11" height="34" rx="2" style="animation-delay:12.5s"/>
+          <rect x="48" y="38" width="11" height="46" rx="2" style="animation-delay:12.6s"/>
+          <rect x="64" y="24" width="11" height="60" rx="2" style="animation-delay:12.7s"/>
         </g>
-        <path class="arrow" d="M8 52 L34 34 L50 44 L84 14" fill="none" stroke="#ff7a1a" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" style="animation-delay:9s"/>
-        <path d="M70 12 L87 11 L86 28" fill="none" stroke="#ff7a1a" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" class="a pop" style="--s:8s;--d:1.6s"/>
+        <path class="arrow" d="M8 52 L34 34 L50 44 L84 14 M70 12 L87 11 L86 28" fill="none" stroke="#ff7a1a" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" style="animation-delay:12.9s"/>
       </svg>
     </div>
-    <div class="brand a blur" style="--d:.9s">Z<span>-</span>TEC</div>
-    <div class="tag a wipe" style="--d:1.5s">Quarteirização Contábil</div>
   </div>
-  <div class="shine" style="animation-delay:9.6s"></div>
-</section>
+  <div class="brand a blur shine" style="--d:.8s;--sd:1.8s">Z<span>-</span>TEC</div>
+  <div class="tag a wipe" style="--d:1.4s">Quarteirização Contábil</div>
+  <div class="line a wipe" style="--d:1.7s"></div>
+  <p class="sub a up" style="--d:2s;font-weight:700">O braço operacional do seu escritório.</p>
+</div></section>
 
-<!-- 4 Promise 12-16.5 -->
-<section class="scene" style="--s:12s;--len:4.5s">
-  <h2 class="a up" style="--d:.1s">Seu escritório pode</h2>
-  <h1 class="a pop" style="--d:.45s;margin:20px 0"><span class="hl">crescer</span></h1>
-  <h2 class="a up" style="--d:.8s">sem aumentar<br>a <span class="or">estrutura.</span></h2>
-  <p class="sub a up" style="--d:1.3s">Atenda mais clientes sem precisar<br>contratar, treinar ou aumentar a equipe.</p>
-</section>
+<!-- S5 PROMISE 16-20 -->
+<section class="scene" style="--s:16s;--len:4s"><div class="cam">
+  <h2 class="words" data-d=".05">Seu escritório pode</h2>
+  <h1 class="a pop" style="--d:.4s;margin:16px 0"><span class="hl" style="--hd:.6s">crescer</span></h1>
+  <h2 class="words" data-d=".7">sem aumentar a estrutura.</h2>
+  <div class="dash glass a up" style="--d:1.1s">
+    <div class="hd"><span>📈 Seu escritório com a Z-TEC</span><span class="live">● ao vivo</span></div>
+    <svg viewBox="0 0 800 380">
+      <g stroke="rgba(255,255,255,.12)" stroke-width="2"><line x1="0" y1="95" x2="800" y2="95"/><line x1="0" y1="190" x2="800" y2="190"/><line x1="0" y1="285" x2="800" y2="285"/></g>
+      <defs><linearGradient id="ar" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff7a1a" stop-opacity=".55"/><stop offset="1" stop-color="#ff7a1a" stop-opacity="0"/></linearGradient></defs>
+      <path class="a" style="--d:2s;animation-name:fade" d="M0 340 C120 330 180 300 260 270 S420 200 500 150 S680 60 800 30 L800 380 L0 380Z" fill="url(#ar)"/>
+      <path class="draw" style="animation-delay:17.4s" d="M0 340 C120 330 180 300 260 270 S420 200 500 150 S680 60 800 30" fill="none" stroke="#ff7a1a" stroke-width="10" stroke-linecap="round"/>
+      <path class="draw" style="animation-delay:17.6s" d="M0 300 L800 300" fill="none" stroke="#fff" stroke-width="6" stroke-dasharray="18 14" opacity=".8"/>
+      <circle class="a pop" style="--d:3s" cx="800" cy="30" r="18" fill="#fff" stroke="#ff7a1a" stroke-width="8"/>
+    </svg>
+    <div class="lg"><span><i style="background:var(--or)"></i>Clientes atendidos</span><span><i style="background:#fff"></i>Sua equipe interna</span></div>
+  </div>
+</div></section>
 
-<!-- 5 Services 16.5-22 -->
-<section class="scene" style="--s:16.5s;--len:5.5s">
-  <div class="kicker a up" style="--d:.1s;color:#fff">Terceirização completa</div>
-  <div class="svc a right" style="--d:.4s"><div class="ic"><svg width="70" height="70" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 7h8M8 11h2M12 11h2M16 11h0M8 15h2M12 15h2M8 18h8"/></svg></div><div><h3>Contábil</h3><p>Escrituração, balancetes e balanços</p></div></div>
-  <div class="svc a right" style="--d:.75s"><div class="ic"><svg width="70" height="70" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2h9l4 4v16H6z"/><path d="M14 2v5h5M9 13l2 2 4-4"/></svg></div><div><h3>Fiscal</h3><p>Apurações, obrigações e SPEDs</p></div></div>
-  <div class="svc a right" style="--d:1.1s"><div class="ic"><svg width="70" height="70" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.6 3.4-5.5 6.5-5.5s5.7 1.9 6.5 5.5"/><circle cx="17" cy="9" r="2.6"/><path d="M17 14.5c2.3 0 4 1.5 4.5 4"/></svg></div><div><h3>DP</h3><p>Folha, admissões e eSocial</p></div></div>
-  <p class="sub a up" style="--d:1.6s;font-weight:700">Parceria <span class="or">empresa para empresa</span> 🤝</p>
-</section>
+<!-- S6 SERVICES 20-26 -->
+<section class="scene" style="--s:20s;--len:6s"><div class="cam">
+  <div class="kicker a up" style="--d:.1s">Terceirização completa</div>
+  <div class="svc glass a right" style="--d:.3s"><div class="ic"><svg width="72" height="72" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 7h8M8 11h2M12 11h2M16 11h0M8 15h2M12 15h2M8 18h8"/></svg></div>
+    <div><h3>Contábil</h3><div class="chips"><span class="chip a pop" style="--d:.8s">Escrituração</span><span class="chip a pop" style="--d:.95s">Conciliações</span><span class="chip a pop" style="--d:1.1s">Balanços</span></div></div></div>
+  <div class="svc glass a right" style="--d:1.3s"><div class="ic"><svg width="72" height="72" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2h9l4 4v16H6z"/><path d="M14 2v5h5M9 13l2 2 4-4"/></svg></div>
+    <div><h3>Fiscal</h3><div class="chips"><span class="chip a pop" style="--d:1.8s">Apurações</span><span class="chip a pop" style="--d:1.95s">SPED</span><span class="chip a pop" style="--d:2.1s">Obrigações</span></div></div></div>
+  <div class="svc glass a right" style="--d:2.3s"><div class="ic"><svg width="72" height="72" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.6 3.4-5.5 6.5-5.5s5.7 1.9 6.5 5.5"/><circle cx="17" cy="9" r="2.6"/><path d="M17 14.5c2.3 0 4 1.5 4.5 4"/></svg></div>
+    <div><h3>Departamento Pessoal</h3><div class="chips"><span class="chip a pop" style="--d:2.8s">Folha</span><span class="chip a pop" style="--d:2.95s">Admissões</span><span class="chip a pop" style="--d:3.1s">eSocial</span></div></div></div>
+  <p class="sub a up" style="--d:3.5s;font-weight:800;font-size:50px">Parceria <span class="grad">empresa para empresa</span> 🤝</p>
+</div></section>
 
-<!-- 6 Triple 22-26 -->
-<section class="scene" style="--s:22s;--len:4s">
-  <div class="big a left" style="--d:.1s"><small>Mais</small><span class="hl">economia</span></div>
-  <div class="big a right" style="--d:.6s;margin-top:50px"><small>Mais</small><span class="hl">eficiência</span></div>
-  <div class="big a up" style="--d:1.1s;margin-top:50px"><small>Menos</small>complicação</div>
-</section>
+<!-- S7 COMPARE 26-32 -->
+<section class="scene" style="--s:26s;--len:6s"><div class="cam">
+  <h2 class="words" data-d=".05" style="margin-bottom:40px">Faça as contas:</h2>
+  <div class="cmp bad a left" style="--d:.4s"><h4 style="color:#ff8a80">✕ Sem a Z-TEC</h4>
+    <ul><li class="a up" style="--d:.7s"><b>✕</b>Contratar e treinar equipe</li><li class="a up" style="--d:.9s"><b>✕</b>Encargos e rotatividade</li><li class="a up" style="--d:1.1s"><b>✕</b>Você apagando incêndio</li></ul></div>
+  <div class="vs a pop" style="--d:1.6s">VS</div>
+  <div class="cmp good a right" style="--d:1.9s"><h4>✓ Com a Z-TEC</h4>
+    <ul><li class="a up" style="--d:2.3s"><b>✓</b>Equipe especializada pronta</li><li class="a up" style="--d:2.6s"><b>✓</b>Custo previsível</li><li class="a up" style="--d:2.9s"><b>✓</b>Foco no cliente e no crescimento</li></ul></div>
+</div></section>
 
-<!-- 7 Counter 26-29.5 -->
-<section class="scene" style="--s:26s;--len:3.5s">
-  <div class="kicker a up" style="--d:.1s;color:#fff">Há</div>
+<!-- S8 STEPS 32-36 -->
+<section class="scene" style="--s:32s;--len:4s"><div class="cam">
+  <div class="kicker a up" style="--d:.1s">Como funciona</div>
+  <div class="steps"><div class="rail"></div>
+    <div class="st a left" style="--d:.4s"><div class="n">1</div><div><h3>Reunião de diagnóstico</h3><p>Entendemos a rotina do seu escritório</p></div></div>
+    <div class="st a left" style="--d:1s"><div class="n">2</div><div><h3>Integração</h3><p>Assumimos a operação contábil e fiscal</p></div></div>
+    <div class="st a left" style="--d:1.6s"><div class="n" style="background:var(--or);color:#fff">3</div><div><h3>Você escala 🚀</h3><p>Mais clientes, mesma estrutura</p></div></div>
+  </div>
+</div></section>
+
+<!-- S9 TRIPLE 36-40 -->
+<section class="scene" style="--s:36s;--len:4s">
+  <div class="beatflash" style="animation-delay:36.1s"></div><div class="beatflash" style="animation-delay:37.1s"></div><div class="beatflash" style="animation-delay:38.1s"></div>
+  <div class="cam">
+  <div class="big a flip" style="--d:.1s"><small>Mais</small><span class="hl" style="--hd:.35s">economia</span></div>
+  <div class="big a flip" style="--d:1.1s"><small>Mais</small><span class="hl" style="--hd:1.35s">eficiência</span></div>
+  <div class="big a flip" style="--d:2.1s"><small>Menos</small><span class="grad">complicação</span></div>
+</div></section>
+
+<!-- S10 YEARS 40-44 -->
+<section class="scene" style="--s:40s;--len:4s"><div class="cam">
+  <div class="kicker a up" style="--d:.1s">Há</div>
   <div class="num a pop" style="--d:.3s">4</div>
-  <h2 class="a up" style="--d:.7s">anos</h2>
-  <p class="sub a up" style="--d:1.1s;font-weight:700;font-size:56px">ajudando escritórios contábeis<br>a <span class="or">crescer.</span></p>
-</section>
+  <h2 class="a up" style="--d:.6s">anos</h2>
+  <p class="sub a up" style="--d:.9s;font-weight:800;font-size:56px;color:#fff">ajudando escritórios contábeis<br>a <span class="grad">crescer.</span></p>
+  <div class="pills"><span class="pill glass a pop" style="--d:1.5s">✓ Contábil</span><span class="pill glass a pop" style="--d:1.7s">✓ Fiscal</span><span class="pill glass a pop" style="--d:1.9s">✓ DP</span></div>
+</div></section>
 
-<!-- 8 CTA 29.5-36 -->
-<section class="scene" style="--s:29.5s;--len:6.6s;animation-name:fade;animation-duration:.4s">
-  <div class="badge a pop" style="--d:.1s;width:240px;height:240px;box-shadow:0 0 0 10px rgba(255,255,255,.12)">
-    <svg width="150" height="150" viewBox="0 0 100 100"><g fill="#0d2a1a"><rect x="16" y="62" width="11" height="22" rx="2"/><rect x="32" y="50" width="11" height="34" rx="2"/><rect x="48" y="38" width="11" height="46" rx="2"/><rect x="64" y="24" width="11" height="60" rx="2"/></g><path d="M8 52 L34 34 L50 44 L84 14 M70 12 L87 11 L86 28" fill="none" stroke="#ff7a1a" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+<!-- S11 CTA 44-50 -->
+<section class="scene" style="--s:44s;--len:6.2s;animation:sin .3s ease 44s both"><div class="cam">
+  <div class="badge a pop" style="--d:.1s;width:230px;height:230px;box-shadow:0 0 0 10px rgba(255,255,255,.12),0 30px 80px rgba(0,0,0,.4)">
+    <svg width="140" height="140" viewBox="0 0 100 100"><g fill="#0b2a18"><rect x="16" y="62" width="11" height="22" rx="2"/><rect x="32" y="50" width="11" height="34" rx="2"/><rect x="48" y="38" width="11" height="46" rx="2"/><rect x="64" y="24" width="11" height="60" rx="2"/></g><path d="M8 52 L34 34 L50 44 L84 14 M70 12 L87 11 L86 28" fill="none" stroke="#ff7a1a" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/></svg>
   </div>
-  <h1 class="a up" style="--d:.4s;margin-top:60px">Fale com a<br><span class="or">Z-TEC</span> 👇</h1>
-  <div class="a pop" style="--d:.9s"><div class="wa pulse" style="--s:29.5s">
+  <h1 class="words" data-d=".35" style="margin-top:50px">Fale com a</h1>
+  <h1 class="a blur" style="--d:.7s"><span class="grad">Z-TEC</span></h1>
+  <div class="cta-top a pop" style="--d:1s">Agende sua reunião</div>
+  <div class="a pop" style="--d:1.2s;position:relative"><div class="wa pulse shine" style="--sd:2s">
     <svg width="80" height="80" viewBox="0 0 24 24" fill="#fff"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8s-.4-.1-.6.1-.7.8-.8 1-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.3-.4.8-1.4.1-.2 0-.3 0-.5l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c1.7.7 2.3.8 3.2.7a2.7 2.7 0 0 0 1.8-1.3 2.2 2.2 0 0 0 .2-1.3c-.1-.1-.3-.2-.5-.3z"/></svg>
-    (44) 99730-3630</div></div>
-  <div class="handle a up" style="--d:1.3s">@ztecquarteirizacao</div>
-  <p class="sub a up" style="--d:1.6s;font-size:40px;letter-spacing:6px;text-transform:uppercase;font-weight:700">Contábil · Fiscal · DP</p>
-</section>
+    (44) 99730-3630</div>
+    <div class="ripple"></div><div class="tap">👆</div></div>
+  <div class="handle a up" style="--d:1.6s;margin-top:150px"><svg width="54" height="54" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="#fff"/></svg>@ztecquarteirizacao</div>
+</div></section>
 
-<div class="lowbar"></div>
+<div class="vignette"></div>
+<div class="grain"></div>
+<div id="fx"></div>
+<div class="progress"></div>
 </div>
 <script>
-// deterministic particles
-let s=7,r=()=>(s=(s*16807)%2147483647)/2147483647,h='';
-for(let i=0;i<40;i++){const sz=4+r()*10;h+=`<i style="left:${r()*1080}px;top:${1920+r()*600}px;width:${sz}px;height:${sz}px;animation-duration:${14+r()*20}s;animation-delay:${-r()*20}s"></i>`}
+// particles
+let s=11,r=()=>(s=(s*16807)%2147483647)/2147483647,h='';
+for(let i=0;i<55;i++){const z=r(),sz=3+z*12;h+=`<i style="left:${r()*1080}px;top:${1950+r()*700}px;width:${sz}px;height:${sz}px;opacity:${.15+z*.45};filter:blur(${(1-z)*3}px);animation-duration:${30-z*18}s;animation-delay:${-r()*30}s"></i>`}
 document.getElementById('dots').innerHTML=h;
+// word-by-word text
+document.querySelectorAll('.words').forEach(el=>{
+  const base=parseFloat(el.dataset.d||0);
+  el.innerHTML=el.textContent.trim().split(/\s+/).map((w,i)=>`<span class="a w" style="--d:${(base+i*.09).toFixed(2)}s">${w}</span>`).join(' ');
+});
+// scene transitions: sweeps + light leaks + flashes
+const fx=document.getElementById('fx');let f='';
+[[4,'wh'],[8,'o'],[12,'o'],[16,'g'],[20,'o'],[26,'g'],[32,'o'],[36,'g'],[40,'o'],[44,'g']].forEach(([t,c],i)=>{
+  f+=`<div class="sweep ${c}" style="animation-delay:${t-.4}s"></div>`;
+  f+=`<div class="leak" style="top:${300+((i*530)%1200)}px;animation-delay:${t-.2}s"></div>`;
+});
+f+=`<div class="flash" style="animation-delay:12.05s"></div>`;
+fx.innerHTML=f;
 window.seek=t=>document.getAnimations().forEach(a=>{a.pause();a.currentTime=t*1000});
 </script>
 </body></html>
