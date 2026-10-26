@@ -47,6 +47,7 @@ export const CATEGORIES: Record<TxType, string[]> = {
     'Aluguel',
     'Folha de pagamento',
     'Pró-labore',
+    'Distribuição de lucros',
     'Impostos',
     'Energia / Água',
     'Internet / Telefone',
