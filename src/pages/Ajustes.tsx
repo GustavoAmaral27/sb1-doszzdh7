@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react'
-import { Cloud, Download, HardDrive, Smartphone, Trash2, Upload } from 'lucide-react'
+import { Download, Smartphone, Trash2, Upload } from 'lucide-react'
+import CloudAccount from '../components/CloudAccount'
 import ConfirmButton from '../components/ConfirmButton'
 import { useStore } from '../store'
 import { COMPANIES, COMPANY_IDS, type CompanyId, type Settings, type Transaction } from '../types'
@@ -8,7 +9,7 @@ import { money, parseMoney, todayISO } from '../lib/utils'
 const fmtBalance = (v: number) => v.toFixed(2).replace('.', ',')
 
 export default function Ajustes() {
-  const { settings, setSettings, transactions, replaceAll, addMany, mode } = useStore()
+  const { settings, setSettings, transactions, replaceAll, addMany } = useStore()
   const [balances, setBalances] = useState<Record<CompanyId, string>>(() => ({
     ztec: fmtBalance(settings.initialBalance.ztec),
     amaral: fmtBalance(settings.initialBalance.amaral),
@@ -27,16 +28,6 @@ export default function Ajustes() {
   async function exportBackup() {
     const filename = `financeiro-backup-${todayISO()}.json`
     const data = JSON.stringify({ version: 1, exportedAt: new Date().toISOString(), transactions, settings }, null, 2)
-    const downloads = window.claude ? await window.claude.use('downloads').catch(() => null) : null
-    if (downloads) {
-      try {
-        await downloads.save({ filename, data })
-        setMsg('Backup exportado.')
-      } catch (e) {
-        if ((e as { code?: string }).code !== 'declined') setMsg('Não foi possível exportar o backup aqui.')
-      }
-      return
-    }
     // No celular, abre o menu de compartilhar (WhatsApp, Drive, e-mail…) quando disponível.
     const file = new File([data], filename, { type: 'application/json' })
     if (navigator.canShare?.({ files: [file] })) {
@@ -78,12 +69,11 @@ export default function Ajustes() {
     setMsg(`${novos.length} lançamento(s) adicionado(s).${repetidos ? ` ${repetidos} já existia(m) e foi(ram) ignorado(s).` : ''}`)
   }
 
-  async function restore() {
+  function restore() {
     if (!pending) return
     const data = pending
     setPending(null)
-    setMsg('Restaurando…')
-    await replaceAll(data)
+    replaceAll(data)
     if (data.settings) {
       setBalances({ ztec: fmtBalance(data.settings.initialBalance.ztec), amaral: fmtBalance(data.settings.initialBalance.amaral) })
     }
@@ -95,17 +85,7 @@ export default function Ajustes() {
       <h2 className="text-xl font-bold">Ajustes</h2>
       {msg && <p className="rounded-xl bg-green-50 p-3 text-sm text-green-800 dark:bg-green-950 dark:text-green-300">{msg}</p>}
 
-      <section className="card flex items-start gap-3">
-        {mode === 'nuvem' ? <Cloud className="mt-0.5 h-5 w-5 shrink-0 text-blue-600" /> : <HardDrive className="mt-0.5 h-5 w-5 shrink-0 text-slate-500" />}
-        <div>
-          <h3 className="font-bold">{mode === 'nuvem' ? 'Dados salvos na nuvem' : mode === 'local' ? 'Dados salvos neste aparelho' : 'Conectando…'}</h3>
-          <p className="text-xs text-slate-500">
-            {mode === 'nuvem'
-              ? 'Seus lançamentos ficam guardados na sua conta Claude e aparecem em qualquer aparelho em que você abrir o app logado.'
-              : 'Funciona sem internet. Os lançamentos ficam guardados só neste celular: exporte um backup de vez em quando para não perder nada se trocar de aparelho.'}
-          </p>
-        </div>
-      </section>
+      <CloudAccount />
 
       <section className="card space-y-3">
         <div>
@@ -183,8 +163,8 @@ export default function Ajustes() {
         <ConfirmButton
           className="w-full"
           confirmLabel="Toque de novo para apagar tudo"
-          onConfirm={async () => {
-            await replaceAll({ transactions: [] })
+          onConfirm={() => {
+            replaceAll({ transactions: [] })
             setMsg('Todos os lançamentos foram apagados.')
           }}
         >

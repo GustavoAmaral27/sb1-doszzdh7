@@ -12,10 +12,8 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
   </React.StrictMode>,
 )
 
-// Fora do claude.ai (hospedagem própria), registra o service worker para funcionar offline.
-// Fora do claude.ai (hospedagem própria): guarda o app no aparelho para abrir sem internet
-// e pede ao navegador para não apagar os dados salvos.
-if (import.meta.env.PROD && !window.claude) {
+// Guarda o app no aparelho para abrir sem internet e pede ao navegador para não apagar os dados salvos.
+if (import.meta.env.PROD) {
   window.addEventListener('load', () => {
     navigator.serviceWorker?.register('./sw.js').catch(() => {})
     navigator.storage?.persist?.().catch(() => {})

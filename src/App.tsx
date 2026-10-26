@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ArrowDownCircle, Cloud, HardDrive, ArrowUpCircle, LayoutDashboard, LineChart, Settings as SettingsIcon } from 'lucide-react'
+import { ArrowDownCircle, Cloud, CloudOff, HardDrive, RefreshCw, ArrowUpCircle, LayoutDashboard, LineChart, Settings as SettingsIcon } from 'lucide-react'
 import CompanySelector from './components/CompanySelector'
 import Dashboard from './pages/Dashboard'
 import Contas from './pages/Contas'
@@ -69,13 +69,19 @@ export default function App() {
 }
 
 function SyncStatus() {
-  const { mode, error } = useStore()
-  if (error) return <span className="rounded-full bg-red-500/20 px-2 py-0.5 text-[11px] font-medium text-red-200">{error}</span>
-  const label = { carregando: 'Conectando…', nuvem: 'Salvo na nuvem', local: 'Salvo no celular' }[mode]
-  const Icon = mode === 'nuvem' ? Cloud : HardDrive
+  const { syncState, lastSync } = useStore()
+  const hora = lastSync ? new Date(lastSync).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : ''
+  const map = {
+    desconectado: { icon: HardDrive, label: 'Salvo no celular', cls: 'text-slate-400' },
+    sincronizando: { icon: RefreshCw, label: 'Sincronizando…', cls: 'text-slate-300' },
+    sincronizado: { icon: Cloud, label: `Sincronizado ${hora}`, cls: 'text-slate-300' },
+    offline: { icon: CloudOff, label: 'Offline · salvo no celular', cls: 'text-amber-300' },
+    erro: { icon: CloudOff, label: 'Falha ao sincronizar', cls: 'text-red-300' },
+  }[syncState]
+  const Icon = map.icon
   return (
-    <span className="flex shrink-0 items-center gap-1 text-[11px] text-slate-400">
-      <Icon className="h-3.5 w-3.5" /> {label}
+    <span className={cn('flex shrink-0 items-center gap-1 text-[11px]', map.cls)}>
+      <Icon className={cn('h-3.5 w-3.5', syncState === 'sincronizando' && 'animate-spin')} /> {map.label}
     </span>
   )
 }

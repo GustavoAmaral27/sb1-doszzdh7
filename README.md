@@ -7,7 +7,7 @@ App financeiro (PWA, instalável no celular) para as empresas **Z-TEC Quarteiriz
 - **Fluxo de caixa** mensal, previsto ou realizado, com gráfico e saldo dia a dia
 - **Ajustes**: saldo inicial por empresa, backup/restauração em JSON
 
-Publicado como Artifact no claude.ai, os dados ficam salvos na nuvem (banco do Artifact, visível só para o dono e editores). Em outra hospedagem, ficam no próprio aparelho (localStorage). Use o backup em Ajustes.
+Os dados ficam salvos no celular (funciona sem internet) e, com login em Ajustes, sincronizam com o Supabase (tabelas `fin_lancamentos` e `fin_config`, protegidas por RLS: cada usuário só vê as próprias linhas). Em cada lançamento vale a versão alterada por último.
 
 ## Rodar
 
@@ -15,7 +15,6 @@ Publicado como Artifact no claude.ai, os dados ficam salvos na nuvem (banco do A
 npm install
 npm run dev      # desenvolvimento
 npm run build    # gera a pasta dist/ para publicar
-npm run build:artifact  # gera dist-artifact/financeiro.html (arquivo único para o claude.ai)
 ```
 
 ## Publicar (funciona sem internet)

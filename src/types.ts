@@ -18,10 +18,15 @@ export interface Transaction {
   paidDate?: string
   notes?: string
   createdAt: string
+  /** Última alteração (ISO). Na sincronização vence a versão mais recente. */
+  updatedAt?: string
+  /** Excluído: fica guardado só para avisar a nuvem, não aparece no app. */
+  deleted?: boolean
 }
 
 export interface Settings {
   initialBalance: Record<CompanyId, number>
+  updatedAt?: string
 }
 
 export const COMPANIES: Record<CompanyId, { name: string; short: string; dot: string }> = {

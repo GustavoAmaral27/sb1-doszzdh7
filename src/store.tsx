@@ -1,18 +1,18 @@
-import { createContext, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import type { Session } from '@supabase/supabase-js'
 import type { CompanyFilter, Settings, Transaction } from './types'
+import { supabase } from './lib/supabase'
+import { syncAll } from './lib/sync'
 
 const TX_KEY = 'financeiro:transacoes'
 const SETTINGS_KEY = 'financeiro:config'
 const FILTER_KEY = 'financeiro:empresa'
-
-/** Coleção e documento no banco do claude.ai (quando publicado como Artifact). */
-const TX_COLLECTION = 'lancamentos'
-const SETTINGS_DOC = 'config/geral'
+const LAST_SYNC_KEY = 'financeiro:ultima-sincronizacao'
 
 const defaultSettings: Settings = { initialBalance: { ztec: 0, amaral: 0 } }
 
-/** nuvem = salvo na conta Claude; local = salvo só neste aparelho */
-export type StorageMode = 'carregando' | 'nuvem' | 'local'
+/** offline = sem internet; desconectado = sem login; erro = falhou a última tentativa */
+export type SyncState = 'desconectado' | 'sincronizando' | 'sincronizado' | 'offline' | 'erro'
 
 function load<T>(key: string, fallback: T): T {
   try {
@@ -31,154 +31,170 @@ function save(key: string, value: unknown) {
   }
 }
 
-/** Remove campos undefined (o banco só aceita JSON puro). */
-const plain = (v: object) => JSON.parse(JSON.stringify(v)) as Record<string, unknown>
-
-function toTransaction(id: string, d: Record<string, unknown>): Transaction | null {
-  if (typeof d.amount !== 'number' || typeof d.dueDate !== 'string') return null
-  if (d.company !== 'ztec' && d.company !== 'amaral') return null
-  if (d.type !== 'pagar' && d.type !== 'receber') return null
-  return {
-    id,
-    company: d.company,
-    type: d.type,
-    description: String(d.description ?? ''),
-    category: String(d.category ?? ''),
-    party: String(d.party ?? ''),
-    amount: d.amount,
-    dueDate: d.dueDate,
-    paid: d.paid === true,
-    paidDate: typeof d.paidDate === 'string' ? d.paidDate : undefined,
-    notes: typeof d.notes === 'string' ? d.notes : undefined,
-    createdAt: String(d.createdAt ?? ''),
-  }
-}
-
-function toSettings(d: Record<string, unknown> | undefined): Settings {
-  const ib = (d?.initialBalance ?? {}) as Record<string, unknown>
-  return {
-    initialBalance: {
-      ztec: typeof ib.ztec === 'number' ? ib.ztec : 0,
-      amaral: typeof ib.amaral === 'number' ? ib.amaral : 0,
-    },
-  }
-}
+const now = () => new Date().toISOString()
 
 interface Store {
+  /** Lançamentos visíveis (sem os excluídos). */
   transactions: Transaction[]
   settings: Settings
   company: CompanyFilter
-  mode: StorageMode
-  error: string
   setCompany: (c: CompanyFilter) => void
   addMany: (list: Transaction[]) => void
   update: (t: Transaction) => void
   remove: (id: string) => void
   togglePaid: (id: string, paidDate?: string) => void
   setSettings: (s: Settings) => void
-  replaceAll: (data: { transactions: Transaction[]; settings?: Settings }) => Promise<void>
+  replaceAll: (data: { transactions: Transaction[]; settings?: Settings }) => void
+  session: Session | null
+  syncState: SyncState
+  lastSync: string | null
+  syncNow: () => void
 }
 
 const Ctx = createContext<Store | null>(null)
 
 export function StoreProvider({ children }: { children: ReactNode }) {
-  const hasBridge = typeof window !== 'undefined' && !!window.claude
-  const [mode, setMode] = useState<StorageMode>(hasBridge ? 'carregando' : 'local')
-  const [transactions, setTransactions] = useState<Transaction[]>(() => (hasBridge ? [] : load(TX_KEY, [])))
-  const [settings, setSettingsState] = useState<Settings>(() => (hasBridge ? defaultSettings : toSettings(load(SETTINGS_KEY, defaultSettings) as never)))
+  // Inclui os excluídos (com deleted: true) para a nuvem saber que foram apagados.
+  const [all, setAll] = useState<Transaction[]>(() => load(TX_KEY, []))
+  const [settings, setSettingsState] = useState<Settings>(() => ({ ...defaultSettings, ...load(SETTINGS_KEY, defaultSettings) }))
   const [company, setCompany] = useState<CompanyFilter>(() => load(FILTER_KEY, 'todas'))
-  const [error, setError] = useState('')
-  const dbRef = useRef<ClaudeDb | null>(null)
+  const [session, setSession] = useState<Session | null>(null)
+  const [syncState, setSyncState] = useState<SyncState>('desconectado')
+  const [lastSync, setLastSync] = useState<string | null>(() => load(LAST_SYNC_KEY, null))
 
-  // Conecta ao banco do claude.ai uma única vez; sem ele, usa o armazenamento do aparelho.
-  useEffect(() => {
-    if (!window.claude) return
-    let unsubs: (() => void)[] = []
-    let cancelled = false
-    window.claude
-      .use('db')
-      .catch(() => null)
-      .then((db) => {
-        if (cancelled) return
-        if (!db) {
-          setTransactions(load(TX_KEY, []))
-          setSettingsState(toSettings(load(SETTINGS_KEY, defaultSettings) as never))
-          setMode('local')
-          return
-        }
-        dbRef.current = db
-        const onErr = () => setError('Sem conexão com a nuvem. Recarregue a página.')
-        unsubs = [
-          db.collection(TX_COLLECTION).onSnapshot((snap) => {
-            setTransactions(snap.docs.map((d) => toTransaction(d.id, d.data() ?? {})).filter((t): t is Transaction => !!t))
-            setMode('nuvem')
-          }, onErr),
-          db.doc(SETTINGS_DOC).onSnapshot((snap) => setSettingsState(toSettings(snap.data())), onErr),
-        ]
+  useEffect(() => save(TX_KEY, all), [all])
+  useEffect(() => save(SETTINGS_KEY, settings), [settings])
+  useEffect(() => save(FILTER_KEY, company), [company])
+
+  // Referências para a sincronização sempre ler o estado mais novo.
+  const allRef = useRef(all)
+  const settingsRef = useRef(settings)
+  allRef.current = all
+  settingsRef.current = settings
+  const running = useRef(false)
+  const again = useRef(false)
+
+  const syncNow = useCallback(async () => {
+    const { data } = await supabase.auth.getSession()
+    const s = data.session
+    if (!s) return setSyncState('desconectado')
+    if (!navigator.onLine) return setSyncState('offline')
+    if (running.current) {
+      again.current = true
+      return
+    }
+    running.current = true
+    setSyncState('sincronizando')
+    try {
+      const sentAll = allRef.current
+      const sentSettings = settingsRef.current
+      const res = await syncAll(sentAll, sentSettings, s.user.id)
+      // Se algo mudou no celular durante a sincronização, mantém a mudança e envia na próxima rodada.
+      setAll((cur) => {
+        if (cur === sentAll) return res.transactions
+        const merged = new Map(res.transactions.map((t) => [t.id, t]))
+        const sent = new Map(sentAll.map((t) => [t.id, t]))
+        for (const t of cur) if (sent.get(t.id) !== t) merged.set(t.id, t)
+        again.current = true
+        return [...merged.values()]
       })
-    return () => {
-      cancelled = true
-      unsubs.forEach((u) => u())
+      setSettingsState((cur) => (cur === sentSettings ? res.settings : cur))
+      const at = now()
+      setLastSync(at)
+      save(LAST_SYNC_KEY, at)
+      setSyncState('sincronizado')
+    } catch {
+      setSyncState(navigator.onLine ? 'erro' : 'offline')
+    } finally {
+      running.current = false
+      if (again.current) {
+        again.current = false
+        setTimeout(syncNow, 500)
+      }
     }
   }, [])
 
+  // Sessão de login (fica salva no celular; funciona offline).
   useEffect(() => {
-    if (mode === 'local') save(TX_KEY, transactions)
-  }, [transactions, mode])
+    supabase.auth.getSession().then(({ data }) => {
+      setSession(data.session)
+      if (data.session) syncNow()
+    })
+    const { data } = supabase.auth.onAuthStateChange((event, s) => {
+      setSession(s)
+      if (event === 'SIGNED_IN') syncNow()
+      if (event === 'SIGNED_OUT') setSyncState('desconectado')
+    })
+    return () => data.subscription.unsubscribe()
+  }, [syncNow])
+
+  // Sincroniza ao voltar a internet, ao reabrir o app e a cada minuto com o app aberto.
   useEffect(() => {
-    if (mode === 'local') save(SETTINGS_KEY, settings)
-  }, [settings, mode])
-  useEffect(() => save(FILTER_KEY, company), [company])
+    const onVisible = () => document.visibilityState === 'visible' && syncNow()
+    const onOffline = () => setSyncState((s) => (s === 'desconectado' ? s : 'offline'))
+    window.addEventListener('online', syncNow)
+    window.addEventListener('offline', onOffline)
+    document.addEventListener('visibilitychange', onVisible)
+    const timer = setInterval(() => document.visibilityState === 'visible' && syncNow(), 60_000)
+    return () => {
+      window.removeEventListener('online', syncNow)
+      window.removeEventListener('offline', onOffline)
+      document.removeEventListener('visibilitychange', onVisible)
+      clearInterval(timer)
+    }
+  }, [syncNow])
+
+  // Depois de cada alteração, envia para a nuvem (agrupando alterações seguidas).
+  const pending = useRef<ReturnType<typeof setTimeout>>()
+  const scheduleSync = useCallback(() => {
+    clearTimeout(pending.current)
+    pending.current = setTimeout(syncNow, 1500)
+  }, [syncNow])
 
   const value = useMemo<Store>(() => {
-    const db = mode === 'nuvem' ? dbRef.current : null
-    const fail = () => setError('Não foi possível salvar na nuvem. Verifique a internet e tente de novo.')
-    const write = (t: Transaction) => db?.collection(TX_COLLECTION).doc(t.id).set(plain(t)).catch(fail)
-    const del = (id: string) => db?.collection(TX_COLLECTION).doc(id).delete().catch(fail)
-
+    const change = (fn: (prev: Transaction[]) => Transaction[]) => {
+      setAll(fn)
+      scheduleSync()
+    }
     return {
-      transactions,
+      transactions: all.filter((t) => !t.deleted),
       settings,
       company,
-      mode,
-      error,
       setCompany,
+      session,
+      syncState,
+      lastSync,
+      syncNow,
       setSettings: (s) => {
-        if (db) db.doc(SETTINGS_DOC).set(plain(s)).catch(fail)
-        setSettingsState(s)
+        setSettingsState({ ...s, updatedAt: now() })
+        scheduleSync()
       },
-      addMany: (list) => {
-        if (db) list.forEach(write)
-        else setTransactions((prev) => [...prev, ...list])
-      },
-      update: (t) => {
-        if (db) write(t)
-        else setTransactions((prev) => prev.map((p) => (p.id === t.id ? t : p)))
-      },
-      remove: (id) => {
-        if (db) del(id)
-        else setTransactions((prev) => prev.filter((p) => p.id !== id))
-      },
-      togglePaid: (id, paidDate) => {
-        const t = transactions.find((p) => p.id === id)
-        if (!t) return
-        const next = { ...t, paid: !t.paid, paidDate: t.paid ? undefined : paidDate ?? t.dueDate }
-        if (db) write(next)
-        else setTransactions((prev) => prev.map((p) => (p.id === id ? next : p)))
-      },
-      replaceAll: async (data) => {
-        if (db) {
-          const keep = new Set(data.transactions.map((t) => t.id))
-          for (const t of transactions) if (!keep.has(t.id)) await del(t.id)
-          for (const t of data.transactions) await write(t)
-          if (data.settings) await db.doc(SETTINGS_DOC).set(plain(data.settings)).catch(fail)
-        } else {
-          setTransactions(data.transactions)
-          if (data.settings) setSettingsState(toSettings(data.settings as never))
-        }
+      addMany: (list) =>
+        change((prev) => {
+          const added = new Map(list.map((t) => [t.id, { ...t, updatedAt: now(), deleted: false }]))
+          return [...prev.filter((p) => !added.has(p.id)), ...added.values()]
+        }),
+      update: (t) => change((prev) => prev.map((p) => (p.id === t.id ? { ...t, updatedAt: now() } : p))),
+      remove: (id) => change((prev) => prev.map((p) => (p.id === id ? { ...p, deleted: true, updatedAt: now() } : p))),
+      togglePaid: (id, paidDate) =>
+        change((prev) =>
+          prev.map((p) =>
+            p.id === id
+              ? { ...p, paid: !p.paid, paidDate: p.paid ? undefined : paidDate ?? p.dueDate, updatedAt: now() }
+              : p,
+          ),
+        ),
+      replaceAll: (data) => {
+        const t = now()
+        const keep = new Set(data.transactions.map((x) => x.id))
+        change((prev) => [
+          ...prev.filter((p) => !keep.has(p.id)).map((p) => ({ ...p, deleted: true, updatedAt: t })),
+          ...data.transactions.map((x) => ({ ...x, deleted: false, updatedAt: t })),
+        ])
+        if (data.settings) setSettingsState({ ...defaultSettings, ...data.settings, updatedAt: t })
       },
     }
-  }, [transactions, settings, company, mode, error])
+  }, [all, settings, company, session, syncState, lastSync, syncNow, scheduleSync])
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>
 }
