@@ -34,11 +34,14 @@ body {
   overflow: hidden;
   overscroll-behavior: none;
 }
-/* Presa nas 4 bordas: ocupa a tela inteira mesmo no app instalado no iPhone,
-   onde 100vh/100dvh fica menor que a tela e deixava uma faixa vazia embaixo. */
+/* Ocupa a tela inteira: --app-h é a altura real medida em main.tsx (no app instalado
+   no iPhone o iOS informa uma altura menor e sobrava uma faixa vazia embaixo). */
 .app-shell {
   position: fixed;
-  inset: 0;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--app-h, 100%);
 }
 /* Menu de baixo no tamanho de app nativo: a área da barrinha do iPhone já dá o respiro. */
 .tabbar {

@@ -4,6 +4,24 @@ import App from './App'
 import { StoreProvider } from './store'
 import './index.css'
 
+/**
+ * Altura real da tela. No app instalado no iPhone (modo "standalone") o iOS informa
+ * uma altura menor que a tela (desconta a barra de status), sobrando uma faixa vazia
+ * embaixo; ali usamos a altura física da tela.
+ */
+function updateAppHeight() {
+  let h = window.innerHeight
+  if ((navigator as Navigator & { standalone?: boolean }).standalone) {
+    const portrait = window.matchMedia('(orientation: portrait)').matches
+    const screenH = portrait ? Math.max(screen.width, screen.height) : Math.min(screen.width, screen.height)
+    h = Math.max(h, screenH)
+  }
+  document.documentElement.style.setProperty('--app-h', `${h}px`)
+}
+updateAppHeight()
+window.addEventListener('resize', updateAppHeight)
+window.addEventListener('orientationchange', () => setTimeout(updateAppHeight, 300))
+
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <StoreProvider>
