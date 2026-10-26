@@ -140,7 +140,7 @@ export default function TransactionForm({ type, editing, onClose }: Props) {
           <div className="space-y-2">
             <label className="flex items-center gap-3 rounded-xl bg-slate-50 p-3 dark:bg-slate-800">
               <input type="checkbox" className="h-5 w-5 accent-blue-600" checked={form.fixo} onChange={(e) => set('fixo', e.target.checked)} />
-              <span className="text-sm font-medium">Mensal fixo: repete todo mês até dez/2028</span>
+              <span className="text-sm font-medium">Mensal fixo: repete todo mês até dez/2031</span>
             </label>
             {!form.fixo && (
               <div>

@@ -1,9 +1,9 @@
 import type { Transaction } from '../types'
 import { monthKey, statusOf, sum, todayISO } from './utils'
 
-/** Primeiro e último mês acompanhados no app (a projeção vai até dez/2028). */
+/** Primeiro e último mês acompanhados no app (a projeção vai até dez/2031). */
 export const FIRST_MONTH = '2026-11'
-export const LAST_MONTH = '2028-12'
+export const LAST_MONTH = '2031-12'
 
 /** Quantos meses do mês de `iso` até LAST_MONTH, inclusive (mínimo 1). */
 export function monthsUntilLast(iso: string) {
