@@ -2,7 +2,7 @@ name: Publicar app
 
 on:
   push:
-    branches: [app-financeiro]
+    branches: [main]
   workflow_dispatch:
 
 permissions:

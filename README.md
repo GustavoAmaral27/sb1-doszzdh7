@@ -20,8 +20,12 @@ npm run build:artifact  # gera dist-artifact/financeiro.html (arquivo único par
 
 ## Publicar (funciona sem internet)
 
+Publicado automaticamente no GitHub Pages a cada push no `main` (`.github/workflows/publicar.yml`):
+**https://gustavoamaral27.github.io/sb1-doszzdh7/**
+
+Alternativa: 
 O repositório já tem `netlify.toml`. No Netlify: **Add new site → Import an existing project → GitHub**,
-escolha este repositório e o branch `app-financeiro`. O build (`npm run build`) e a pasta `dist` já vêm configurados.
+escolha este repositório e o branch `main`. O build (`npm run build`) e a pasta `dist` já vêm configurados.
 
 Abra o link no celular uma vez com internet e adicione à tela inicial. A partir daí o app abre e salva
 lançamentos sem internet. O `scripts/gen-sw.mjs` gera o service worker que guarda o app no aparelho.
