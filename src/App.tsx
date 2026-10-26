@@ -35,7 +35,7 @@ export default function App() {
           <p className="text-xs text-slate-400">Z-TEC Quarteirização Contábil · Amaral Contabilidade</p>
           <div className="mt-3">
             <CompanySelector />
-            {tab === 'inicio' && (
+            {(tab === 'inicio' || tab === 'pagar' || tab === 'receber') && (
               <div className="mt-2">
                 <MonthNav month={month} onChange={setMonth} />
               </div>
@@ -46,8 +46,8 @@ export default function App() {
 
       <main className="flex-1 px-4 pb-28 pt-4">
         {tab === 'inicio' && <Dashboard month={month} onNavigate={setTab} />}
-        {tab === 'pagar' && <Contas key="pagar" type="pagar" />}
-        {tab === 'receber' && <Contas key="receber" type="receber" />}
+        {tab === 'pagar' && <Contas key="pagar" type="pagar" month={month} />}
+        {tab === 'receber' && <Contas key="receber" type="receber" month={month} />}
         {tab === 'fluxo' && <FluxoCaixa />}
         {tab === 'ajustes' && <Ajustes />}
       </main>

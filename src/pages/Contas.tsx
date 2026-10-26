@@ -1,31 +1,30 @@
 import { useMemo, useState } from 'react'
-import { ChevronLeft, ChevronRight, Plus, Search } from 'lucide-react'
+import { Plus, Search } from 'lucide-react'
 import TransactionForm from '../components/TransactionForm'
 import TransactionItem from '../components/TransactionItem'
 import { useFiltered } from '../store'
 import type { Transaction, TxStatus, TxType } from '../types'
-import { cn, monthKey, monthLabel, money, shiftMonth, statusOf, sum, todayISO } from '../lib/utils'
+import { cn, monthKey, monthLabel, money, statusOf, sum, todayISO } from '../lib/utils'
 
 type StatusFilter = 'aberto' | 'vencido' | 'pago' | 'todos'
 
-export default function Contas({ type }: { type: TxType }) {
+export default function Contas({ type, month }: { type: TxType; month: string }) {
   const all = useFiltered()
-  const [status, setStatus] = useState<StatusFilter>('aberto')
-  const [month, setMonth] = useState<string | null>(null)
+  const [status, setStatus] = useState<StatusFilter>('todos')
   const [query, setQuery] = useState('')
   const [form, setForm] = useState<{ editing?: Transaction } | null>(null)
   const isPagar = type === 'pagar'
 
-  const ofType = useMemo(() => all.filter((t) => t.type === type), [all, type])
+  // Só os lançamentos do tipo e do mês escolhido no topo (pelo vencimento).
+  const ofType = useMemo(() => all.filter((t) => t.type === type && monthKey(t.dueDate) === month), [all, type, month])
   const today = todayISO()
 
   const totals = useMemo(() => {
     const by = (s: TxStatus) => ofType.filter((t) => statusOf(t, today) === s)
-    const thisMonth = monthKey(today)
     return {
       aberto: sum(by('pendente')) + sum(by('vencido')),
       vencido: sum(by('vencido')),
-      pagoMes: sum(ofType.filter((t) => t.paid && t.paidDate && monthKey(t.paidDate) === thisMonth)),
+      pagoMes: sum(by('pago')),
     }
   }, [ofType, today])
 
@@ -37,12 +36,11 @@ export default function Contas({ type }: { type: TxType }) {
         if (status === 'aberto' && s === 'pago') return false
         if (status === 'vencido' && s !== 'vencido') return false
         if (status === 'pago' && s !== 'pago') return false
-        if (month && monthKey(t.dueDate) !== month) return false
         if (q && ![t.description, t.party, t.category, t.notes ?? ''].some((f) => f.toLowerCase().includes(q))) return false
         return true
       })
       .sort((a, b) => (status === 'pago' ? b.dueDate.localeCompare(a.dueDate) : a.dueDate.localeCompare(b.dueDate)))
-  }, [ofType, status, month, query, today])
+  }, [ofType, status, query, today])
 
   const STATUS: { id: StatusFilter; label: string }[] = [
     { id: 'aberto', label: 'Em aberto' },
@@ -54,7 +52,10 @@ export default function Contas({ type }: { type: TxType }) {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-bold">Contas a {isPagar ? 'pagar' : 'receber'}</h2>
+        <div>
+          <p className="text-xs font-medium uppercase tracking-wide text-slate-500">{monthLabel(month)}</p>
+          <h2 className="text-xl font-bold leading-tight">Contas a {isPagar ? 'pagar' : 'receber'}</h2>
+        </div>
         <button className="btn-primary" onClick={() => setForm({})}>
           <Plus className="h-4 w-4" /> Nova
         </button>
@@ -63,7 +64,7 @@ export default function Contas({ type }: { type: TxType }) {
       <div className="grid grid-cols-3 gap-2">
         <Mini label="Em aberto" value={totals.aberto} />
         <Mini label="Vencido" value={totals.vencido} alert={totals.vencido > 0} />
-        <Mini label={isPagar ? 'Pago no mês' : 'Recebido no mês'} value={totals.pagoMes} />
+        <Mini label={isPagar ? 'Pago' : 'Recebido'} value={totals.pagoMes} />
       </div>
 
       <div className="card space-y-3 p-3">
@@ -71,38 +72,19 @@ export default function Contas({ type }: { type: TxType }) {
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
           <input className="input pl-9" placeholder="Buscar descrição, cliente, categoria…" value={query} onChange={(e) => setQuery(e.target.value)} />
         </div>
-        <div className="flex gap-1 overflow-x-auto">
+        <div className="grid grid-cols-4 gap-1">
           {STATUS.map((s) => (
             <button
               key={s.id}
               onClick={() => setStatus(s.id)}
               className={cn(
-                'shrink-0 rounded-full px-3 py-1.5 text-sm font-medium',
+                'truncate rounded-full px-1 py-1.5 text-[13px] font-medium',
                 status === s.id ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900' : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300',
               )}
             >
               {s.label}
             </button>
           ))}
-        </div>
-        <div className="flex items-center justify-between rounded-xl bg-slate-50 p-1 dark:bg-slate-800">
-          {month ? (
-            <>
-              <button className="rounded-lg p-2" aria-label="Mês anterior" onClick={() => setMonth(shiftMonth(month, -1))}>
-                <ChevronLeft className="h-5 w-5" />
-              </button>
-              <button className="text-sm font-semibold" onClick={() => setMonth(null)}>
-                {monthLabel(month)} <span className="text-xs font-normal text-slate-500">(limpar)</span>
-              </button>
-              <button className="rounded-lg p-2" aria-label="Próximo mês" onClick={() => setMonth(shiftMonth(month, 1))}>
-                <ChevronRight className="h-5 w-5" />
-              </button>
-            </>
-          ) : (
-            <button className="w-full py-2 text-sm font-medium text-slate-600 dark:text-slate-300" onClick={() => setMonth(monthKey(today))}>
-              Todos os vencimentos · filtrar por mês
-            </button>
-          )}
         </div>
       </div>
 
