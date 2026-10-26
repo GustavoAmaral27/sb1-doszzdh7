@@ -1,11 +1,12 @@
 import { useState } from 'react'
-import { ArrowDownCircle, ArrowUpCircle, LayoutDashboard, LineChart, Settings as SettingsIcon } from 'lucide-react'
+import { ArrowDownCircle, Cloud, HardDrive, ArrowUpCircle, LayoutDashboard, LineChart, Settings as SettingsIcon } from 'lucide-react'
 import CompanySelector from './components/CompanySelector'
 import Dashboard from './pages/Dashboard'
 import Contas from './pages/Contas'
 import FluxoCaixa from './pages/FluxoCaixa'
 import Ajustes from './pages/Ajustes'
 import { cn } from './lib/utils'
+import { useStore } from './store'
 
 export type Tab = 'inicio' | 'pagar' | 'receber' | 'fluxo' | 'ajustes'
 
@@ -22,9 +23,12 @@ export default function App() {
 
   return (
     <div className="mx-auto flex min-h-screen max-w-2xl flex-col text-slate-900 dark:text-slate-100">
-      <header className="pt-safe sticky top-0 z-20 bg-slate-900 text-white shadow-md">
+      <header className="sticky-top sticky z-20 bg-slate-900 text-white shadow-md">
         <div className="px-4 pb-3 pt-3">
-          <h1 className="text-lg font-bold leading-tight">Financeiro</h1>
+          <div className="flex items-center justify-between gap-2">
+            <h1 className="text-lg font-bold leading-tight">Financeiro</h1>
+            <SyncStatus />
+          </div>
           <p className="text-xs text-slate-400">Z-TEC Quarteirização Contábil · Amaral Contabilidade</p>
           <div className="mt-3">
             <CompanySelector />
@@ -61,5 +65,17 @@ export default function App() {
         </div>
       </nav>
     </div>
+  )
+}
+
+function SyncStatus() {
+  const { mode, error } = useStore()
+  if (error) return <span className="rounded-full bg-red-500/20 px-2 py-0.5 text-[11px] font-medium text-red-200">{error}</span>
+  const label = { carregando: 'Conectando…', nuvem: 'Salvo na nuvem', local: 'Salvo no aparelho' }[mode]
+  const Icon = mode === 'nuvem' ? Cloud : HardDrive
+  return (
+    <span className="flex shrink-0 items-center gap-1 text-[11px] text-slate-400">
+      <Icon className="h-3.5 w-3.5" /> {label}
+    </span>
   )
 }

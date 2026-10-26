@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { Trash2 } from 'lucide-react'
 import Sheet from './Sheet'
+import ConfirmButton from './ConfirmButton'
 import { useStore } from '../store'
 import { CATEGORIES, COMPANIES, COMPANY_IDS, type CompanyId, type Transaction, type TxType } from '../types'
 import { addMonths, cn, parseMoney, todayISO, uid } from '../lib/utils'
@@ -159,18 +160,15 @@ export default function TransactionForm({ type, editing, onClose }: Props) {
 
         <div className="flex gap-2 pt-1">
           {editing && (
-            <button
-              type="button"
-              className="btn bg-red-50 text-red-700 dark:bg-red-950 dark:text-red-300"
-              onClick={() => {
-                if (confirm('Excluir este lançamento?')) {
-                  remove(editing.id)
-                  onClose()
-                }
+            <ConfirmButton
+              confirmLabel="Confirmar exclusão"
+              onConfirm={() => {
+                remove(editing.id)
+                onClose()
               }}
             >
               <Trash2 className="h-4 w-4" /> Excluir
-            </button>
+            </ConfirmButton>
           )}
           <button type="submit" className="btn-primary flex-1">Salvar</button>
         </div>

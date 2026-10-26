@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "build:artifact": "npm run build && node scripts/build-artifact.mjs"
   },
   "dependencies": {
     "clsx": "^2.1.0",

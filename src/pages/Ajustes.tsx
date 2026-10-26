@@ -1,16 +1,20 @@
 import { useRef, useState } from 'react'
-import { Download, Smartphone, Trash2, Upload } from 'lucide-react'
+import { Cloud, Download, HardDrive, Smartphone, Trash2, Upload } from 'lucide-react'
+import ConfirmButton from '../components/ConfirmButton'
 import { useStore } from '../store'
 import { COMPANIES, COMPANY_IDS, type CompanyId, type Settings, type Transaction } from '../types'
 import { money, parseMoney, todayISO } from '../lib/utils'
 
+const fmtBalance = (v: number) => v.toFixed(2).replace('.', ',')
+
 export default function Ajustes() {
-  const { settings, setSettings, transactions, replaceAll } = useStore()
+  const { settings, setSettings, transactions, replaceAll, mode } = useStore()
   const [balances, setBalances] = useState<Record<CompanyId, string>>(() => ({
-    ztec: settings.initialBalance.ztec.toFixed(2).replace('.', ','),
-    amaral: settings.initialBalance.amaral.toFixed(2).replace('.', ','),
+    ztec: fmtBalance(settings.initialBalance.ztec),
+    amaral: fmtBalance(settings.initialBalance.amaral),
   }))
   const [msg, setMsg] = useState('')
+  const [pending, setPending] = useState<{ transactions: Transaction[]; settings?: Settings } | null>(null)
   const fileRef = useRef<HTMLInputElement>(null)
 
   function saveBalances() {
@@ -20,40 +24,66 @@ export default function Ajustes() {
     setMsg('Saldos iniciais salvos.')
   }
 
-  function exportBackup() {
-    const blob = new Blob([JSON.stringify({ version: 1, exportedAt: new Date().toISOString(), transactions, settings }, null, 2)], {
-      type: 'application/json',
-    })
-    const url = URL.createObjectURL(blob)
+  async function exportBackup() {
+    const filename = `financeiro-backup-${todayISO()}.json`
+    const data = JSON.stringify({ version: 1, exportedAt: new Date().toISOString(), transactions, settings }, null, 2)
+    const downloads = window.claude ? await window.claude.use('downloads').catch(() => null) : null
+    if (downloads) {
+      try {
+        await downloads.save({ filename, data })
+        setMsg('Backup exportado.')
+      } catch (e) {
+        if ((e as { code?: string }).code !== 'declined') setMsg('Não foi possível exportar o backup aqui.')
+      }
+      return
+    }
+    const url = URL.createObjectURL(new Blob([data], { type: 'application/json' }))
     const a = document.createElement('a')
     a.href = url
-    a.download = `financeiro-backup-${todayISO()}.json`
+    a.download = filename
     a.click()
     URL.revokeObjectURL(url)
   }
 
-  async function importBackup(file: File) {
+  async function readBackup(file: File) {
     try {
       const data = JSON.parse(await file.text()) as { transactions?: Transaction[]; settings?: Settings }
       if (!Array.isArray(data.transactions)) throw new Error()
-      if (!confirm(`Restaurar ${data.transactions.length} lançamento(s)? Os dados atuais serão substituídos.`)) return
-      replaceAll({ transactions: data.transactions, settings: data.settings })
-      if (data.settings) {
-        setBalances({
-          ztec: data.settings.initialBalance.ztec.toFixed(2).replace('.', ','),
-          amaral: data.settings.initialBalance.amaral.toFixed(2).replace('.', ','),
-        })
-      }
-      setMsg('Backup restaurado com sucesso.')
+      setPending({ transactions: data.transactions, settings: data.settings })
+      setMsg('')
     } catch {
       setMsg('Arquivo de backup inválido.')
     }
+  }
+
+  async function restore() {
+    if (!pending) return
+    const data = pending
+    setPending(null)
+    setMsg('Restaurando…')
+    await replaceAll(data)
+    if (data.settings) {
+      setBalances({ ztec: fmtBalance(data.settings.initialBalance.ztec), amaral: fmtBalance(data.settings.initialBalance.amaral) })
+    }
+    setMsg('Backup restaurado.')
   }
 
   return (
     <div className="space-y-4">
       <h2 className="text-xl font-bold">Ajustes</h2>
       {msg && <p className="rounded-xl bg-green-50 p-3 text-sm text-green-800 dark:bg-green-950 dark:text-green-300">{msg}</p>}
+
+      <section className="card flex items-start gap-3">
+        {mode === 'nuvem' ? <Cloud className="mt-0.5 h-5 w-5 shrink-0 text-blue-600" /> : <HardDrive className="mt-0.5 h-5 w-5 shrink-0 text-slate-500" />}
+        <div>
+          <h3 className="font-bold">{mode === 'nuvem' ? 'Dados salvos na nuvem' : mode === 'local' ? 'Dados salvos neste aparelho' : 'Conectando…'}</h3>
+          <p className="text-xs text-slate-500">
+            {mode === 'nuvem'
+              ? 'Seus lançamentos ficam guardados na sua conta Claude e aparecem em qualquer aparelho em que você abrir o app logado.'
+              : 'Os lançamentos ficam só neste navegador. Faça backup com frequência.'}
+          </p>
+        </div>
+      </section>
 
       <section className="card space-y-3">
         <div>
@@ -79,9 +109,7 @@ export default function Ajustes() {
       <section className="card space-y-3">
         <div>
           <h3 className="font-bold">Backup dos dados</h3>
-          <p className="text-xs text-slate-500">
-            Os dados ficam salvos neste aparelho. Faça backup com frequência (ex.: salve no Google Drive ou envie por WhatsApp para você) para não perder nada se trocar de celular ou limpar o navegador.
-          </p>
+          <p className="text-xs text-slate-500">Exporta todos os lançamentos num arquivo .json, que você pode guardar no Drive ou mandar para você mesmo.</p>
         </div>
         <div className="grid grid-cols-2 gap-2">
           <button className="btn-ghost" onClick={exportBackup}>
@@ -98,10 +126,21 @@ export default function Ajustes() {
           className="hidden"
           onChange={(e) => {
             const f = e.target.files?.[0]
-            if (f) importBackup(f)
+            if (f) readBackup(f)
             e.target.value = ''
           }}
         />
+        {pending && (
+          <div className="space-y-2 rounded-xl bg-amber-50 p-3 text-sm text-amber-900 dark:bg-amber-950 dark:text-amber-200">
+            <p>
+              Restaurar <b>{pending.transactions.length}</b> lançamento(s)? Os {transactions.length} lançamento(s) atuais serão substituídos.
+            </p>
+            <div className="grid grid-cols-2 gap-2">
+              <button className="btn-ghost" onClick={() => setPending(null)}>Cancelar</button>
+              <button className="btn-primary" onClick={restore}>Restaurar</button>
+            </div>
+          </div>
+        )}
         <p className="text-xs text-slate-500">{transactions.length} lançamento(s) salvos.</p>
       </section>
 
@@ -113,22 +152,22 @@ export default function Ajustes() {
           <b>iPhone (Safari):</b> toque em Compartilhar → <i>Adicionar à Tela de Início</i>.
         </p>
         <p className="text-sm text-slate-600 dark:text-slate-300">
-          <b>Android (Chrome):</b> menu ⋮ → <i>Instalar app</i> ou <i>Adicionar à tela inicial</i>.
+          <b>Android (Chrome):</b> menu ⋮ → <i>Adicionar à tela inicial</i>.
         </p>
       </section>
 
-      <section className="card">
-        <button
-          className="btn w-full bg-red-50 text-red-700 dark:bg-red-950 dark:text-red-300"
-          onClick={() => {
-            if (confirm('Apagar TODOS os lançamentos? Faça um backup antes. Essa ação não pode ser desfeita.')) {
-              replaceAll({ transactions: [] })
-              setMsg('Todos os lançamentos foram apagados.')
-            }
+      <section className="card space-y-2">
+        <ConfirmButton
+          className="w-full"
+          confirmLabel="Toque de novo para apagar tudo"
+          onConfirm={async () => {
+            await replaceAll({ transactions: [] })
+            setMsg('Todos os lançamentos foram apagados.')
           }}
         >
           <Trash2 className="h-4 w-4" /> Apagar todos os lançamentos
-        </button>
+        </ConfirmButton>
+        <p className="text-center text-xs text-slate-500">Não pode ser desfeito. Exporte um backup antes.</p>
       </section>
     </div>
   )

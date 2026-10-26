@@ -5,17 +5,40 @@
 :root {
   --entrada: #2a78d6;
   --saida: #eb6834;
+  --fundo: #f1f5f9;
+  --topo: #0f172a;
   -webkit-tap-highlight-color: transparent;
 }
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme='light']) {
     --entrada: #3987e5;
     --saida: #d95926;
+    --fundo: #020617;
+    color-scheme: dark;
   }
+}
+:root[data-theme='dark'] {
+  --entrada: #3987e5;
+  --saida: #d95926;
+  --fundo: #020617;
+  color-scheme: dark;
 }
 
 body {
+  background: var(--fundo);
   overscroll-behavior-y: none;
+}
+/* pinta a faixa da barra de status com a cor do cabeçalho */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0 0 auto;
+  height: env(safe-area-inset-top, 0px);
+  z-index: 30;
+  background: var(--topo);
+}
+.sticky-top {
+  top: env(safe-area-inset-top, 0px);
 }
 
 .pb-safe {
