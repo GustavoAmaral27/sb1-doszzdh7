@@ -71,7 +71,7 @@ export default function App() {
 function SyncStatus() {
   const { mode, error } = useStore()
   if (error) return <span className="rounded-full bg-red-500/20 px-2 py-0.5 text-[11px] font-medium text-red-200">{error}</span>
-  const label = { carregando: 'Conectando…', nuvem: 'Salvo na nuvem', local: 'Salvo no aparelho' }[mode]
+  const label = { carregando: 'Conectando…', nuvem: 'Salvo na nuvem', local: 'Salvo no celular' }[mode]
   const Icon = mode === 'nuvem' ? Cloud : HardDrive
   return (
     <span className="flex shrink-0 items-center gap-1 text-[11px] text-slate-400">

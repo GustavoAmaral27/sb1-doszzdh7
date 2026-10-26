@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
+    "build": "tsc && vite build && node scripts/gen-sw.mjs",
     "preview": "vite preview",
     "build:artifact": "npm run build && node scripts/build-artifact.mjs"
   },

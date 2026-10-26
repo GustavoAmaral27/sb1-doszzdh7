@@ -37,6 +37,17 @@ export default function Ajustes() {
       }
       return
     }
+    // No celular, abre o menu de compartilhar (WhatsApp, Drive, e-mail…) quando disponível.
+    const file = new File([data], filename, { type: 'application/json' })
+    if (navigator.canShare?.({ files: [file] })) {
+      try {
+        await navigator.share({ files: [file], title: 'Backup Financeiro' })
+        setMsg('Backup exportado.')
+      } catch (e) {
+        if ((e as Error).name !== 'AbortError') setMsg('Não foi possível compartilhar o backup.')
+      }
+      return
+    }
     const url = URL.createObjectURL(new Blob([data], { type: 'application/json' }))
     const a = document.createElement('a')
     a.href = url
@@ -80,7 +91,7 @@ export default function Ajustes() {
           <p className="text-xs text-slate-500">
             {mode === 'nuvem'
               ? 'Seus lançamentos ficam guardados na sua conta Claude e aparecem em qualquer aparelho em que você abrir o app logado.'
-              : 'Os lançamentos ficam só neste navegador. Faça backup com frequência.'}
+              : 'Funciona sem internet. Os lançamentos ficam guardados só neste celular: exporte um backup de vez em quando para não perder nada se trocar de aparelho.'}
           </p>
         </div>
       </section>

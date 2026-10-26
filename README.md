@@ -18,4 +18,10 @@ npm run build    # gera a pasta dist/ para publicar
 npm run build:artifact  # gera dist-artifact/financeiro.html (arquivo único para o claude.ai)
 ```
 
-Publique a pasta `dist/` em qualquer hospedagem estática (Netlify, Vercel, GitHub Pages) e abra o link no celular → "Adicionar à tela inicial".
+## Publicar (funciona sem internet)
+
+O repositório já tem `netlify.toml`. No Netlify: **Add new site → Import an existing project → GitHub**,
+escolha este repositório e o branch `app-financeiro`. O build (`npm run build`) e a pasta `dist` já vêm configurados.
+
+Abra o link no celular uma vez com internet e adicione à tela inicial. A partir daí o app abre e salva
+lançamentos sem internet. O `scripts/gen-sw.mjs` gera o service worker que guarda o app no aparelho.
