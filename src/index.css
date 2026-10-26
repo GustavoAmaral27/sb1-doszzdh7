@@ -7,6 +7,7 @@
   --saida: #eb6834;
   --fundo: #f1f5f9;
   --topo: #0f172a;
+  --menu: #ffffff;
   -webkit-tap-highlight-color: transparent;
 }
 @media (prefers-color-scheme: dark) {
@@ -14,6 +15,7 @@
     --entrada: #3987e5;
     --saida: #d95926;
     --fundo: #020617;
+    --menu: #0f172a;
     color-scheme: dark;
   }
 }
@@ -21,6 +23,7 @@
   --entrada: #3987e5;
   --saida: #d95926;
   --fundo: #020617;
+  --menu: #0f172a;
   color-scheme: dark;
 }
 
@@ -34,18 +37,27 @@ body {
   overflow: hidden;
   overscroll-behavior: none;
 }
-/* Ocupa a tela inteira: --app-h é a altura real medida em main.tsx (no app instalado
-   no iPhone o iOS informa uma altura menor e sobrava uma faixa vazia embaixo). */
+/* Ocupa a área que o navegador libera (--app-h, medida em main.tsx). */
 .app-shell {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   height: var(--app-h, 100%);
+  background: var(--fundo);
 }
 /* Menu de baixo no tamanho de app nativo: a área da barrinha do iPhone já dá o respiro. */
 .tabbar {
   padding-bottom: max(4px, calc(env(safe-area-inset-bottom, 0px) - 12px));
+}
+/* iPhone com a faixa inferior fora do alcance do app: a faixa ganha a cor do menu
+   e vira o respiro da barrinha, então o menu não soma espaço extra. */
+html.ios-faixa,
+html.ios-faixa body {
+  background: var(--menu);
+}
+html.ios-faixa .tabbar {
+  padding-bottom: 4px;
 }
 main {
   -webkit-overflow-scrolling: touch;

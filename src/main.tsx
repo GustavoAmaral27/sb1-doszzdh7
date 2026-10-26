@@ -5,18 +5,21 @@ import { StoreProvider } from './store'
 import './index.css'
 
 /**
- * Altura real da tela. No app instalado no iPhone (modo "standalone") o iOS informa
- * uma altura menor que a tela (desconta a barra de status), sobrando uma faixa vazia
- * embaixo; ali usamos a altura física da tela.
+ * No app instalado no iPhone (modo "standalone") o iOS às vezes entrega uma área menor que
+ * a tela e deixa uma faixa embaixo onde o app não consegue desenhar. Nesse caso marcamos o
+ * <html> com .ios-faixa: a faixa é pintada da cor do menu (parece a continuação dele) e o
+ * menu dispensa o espaço extra da barrinha do iPhone.
  */
 function updateAppHeight() {
-  let h = window.innerHeight
+  const h = window.innerHeight
+  let faixa = false
   if ((navigator as Navigator & { standalone?: boolean }).standalone) {
     const portrait = window.matchMedia('(orientation: portrait)').matches
     const screenH = portrait ? Math.max(screen.width, screen.height) : Math.min(screen.width, screen.height)
-    h = Math.max(h, screenH)
+    faixa = screenH - h > 8
   }
   document.documentElement.style.setProperty('--app-h', `${h}px`)
+  document.documentElement.classList.toggle('ios-faixa', faixa)
 }
 updateAppHeight()
 window.addEventListener('resize', updateAppHeight)
