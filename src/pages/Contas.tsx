@@ -1,0 +1,143 @@
+import { useMemo, useState } from 'react'
+import { ChevronLeft, ChevronRight, Plus, Search } from 'lucide-react'
+import TransactionForm from '../components/TransactionForm'
+import TransactionItem from '../components/TransactionItem'
+import { useFiltered } from '../store'
+import type { Transaction, TxStatus, TxType } from '../types'
+import { cn, monthKey, monthLabel, money, shiftMonth, statusOf, sum, todayISO } from '../lib/utils'
+
+type StatusFilter = 'aberto' | 'vencido' | 'pago' | 'todos'
+
+export default function Contas({ type }: { type: TxType }) {
+  const all = useFiltered()
+  const [status, setStatus] = useState<StatusFilter>('aberto')
+  const [month, setMonth] = useState<string | null>(null)
+  const [query, setQuery] = useState('')
+  const [form, setForm] = useState<{ editing?: Transaction } | null>(null)
+  const isPagar = type === 'pagar'
+
+  const ofType = useMemo(() => all.filter((t) => t.type === type), [all, type])
+  const today = todayISO()
+
+  const totals = useMemo(() => {
+    const by = (s: TxStatus) => ofType.filter((t) => statusOf(t, today) === s)
+    const thisMonth = monthKey(today)
+    return {
+      aberto: sum(by('pendente')) + sum(by('vencido')),
+      vencido: sum(by('vencido')),
+      pagoMes: sum(ofType.filter((t) => t.paid && t.paidDate && monthKey(t.paidDate) === thisMonth)),
+    }
+  }, [ofType, today])
+
+  const list = useMemo(() => {
+    const q = query.trim().toLowerCase()
+    return ofType
+      .filter((t) => {
+        const s = statusOf(t, today)
+        if (status === 'aberto' && s === 'pago') return false
+        if (status === 'vencido' && s !== 'vencido') return false
+        if (status === 'pago' && s !== 'pago') return false
+        if (month && monthKey(t.dueDate) !== month) return false
+        if (q && ![t.description, t.party, t.category, t.notes ?? ''].some((f) => f.toLowerCase().includes(q))) return false
+        return true
+      })
+      .sort((a, b) => (status === 'pago' ? b.dueDate.localeCompare(a.dueDate) : a.dueDate.localeCompare(b.dueDate)))
+  }, [ofType, status, month, query, today])
+
+  const STATUS: { id: StatusFilter; label: string }[] = [
+    { id: 'aberto', label: 'Em aberto' },
+    { id: 'vencido', label: 'Vencidas' },
+    { id: 'pago', label: isPagar ? 'Pagas' : 'Recebidas' },
+    { id: 'todos', label: 'Todas' },
+  ]
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <h2 className="text-xl font-bold">Contas a {isPagar ? 'pagar' : 'receber'}</h2>
+        <button className="btn-primary" onClick={() => setForm({})}>
+          <Plus className="h-4 w-4" /> Nova
+        </button>
+      </div>
+
+      <div className="grid grid-cols-3 gap-2">
+        <Mini label="Em aberto" value={totals.aberto} />
+        <Mini label="Vencido" value={totals.vencido} alert={totals.vencido > 0} />
+        <Mini label={isPagar ? 'Pago no mês' : 'Recebido no mês'} value={totals.pagoMes} />
+      </div>
+
+      <div className="card space-y-3 p-3">
+        <div className="relative">
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+          <input className="input pl-9" placeholder="Buscar descrição, cliente, categoria…" value={query} onChange={(e) => setQuery(e.target.value)} />
+        </div>
+        <div className="flex gap-1 overflow-x-auto">
+          {STATUS.map((s) => (
+            <button
+              key={s.id}
+              onClick={() => setStatus(s.id)}
+              className={cn(
+                'shrink-0 rounded-full px-3 py-1.5 text-sm font-medium',
+                status === s.id ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900' : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300',
+              )}
+            >
+              {s.label}
+            </button>
+          ))}
+        </div>
+        <div className="flex items-center justify-between rounded-xl bg-slate-50 p-1 dark:bg-slate-800">
+          {month ? (
+            <>
+              <button className="rounded-lg p-2" aria-label="Mês anterior" onClick={() => setMonth(shiftMonth(month, -1))}>
+                <ChevronLeft className="h-5 w-5" />
+              </button>
+              <button className="text-sm font-semibold" onClick={() => setMonth(null)}>
+                {monthLabel(month)} <span className="text-xs font-normal text-slate-500">(limpar)</span>
+              </button>
+              <button className="rounded-lg p-2" aria-label="Próximo mês" onClick={() => setMonth(shiftMonth(month, 1))}>
+                <ChevronRight className="h-5 w-5" />
+              </button>
+            </>
+          ) : (
+            <button className="w-full py-2 text-sm font-medium text-slate-600 dark:text-slate-300" onClick={() => setMonth(monthKey(today))}>
+              Todos os vencimentos · filtrar por mês
+            </button>
+          )}
+        </div>
+      </div>
+
+      <div className="card py-1">
+        {list.length === 0 ? (
+          <p className="py-10 text-center text-sm text-slate-500">
+            Nenhuma conta aqui.
+            <br />
+            Toque em <b>Nova</b> para lançar.
+          </p>
+        ) : (
+          <>
+            <ul className="divide-y divide-slate-100 dark:divide-slate-800">
+              {list.map((t) => (
+                <TransactionItem key={t.id} t={t} onEdit={(editing) => setForm({ editing })} />
+              ))}
+            </ul>
+            <div className="flex justify-between border-t border-slate-200 py-3 text-sm font-semibold dark:border-slate-700">
+              <span>{list.length} lançamento(s)</span>
+              <span className="tabular-nums">{money(sum(list))}</span>
+            </div>
+          </>
+        )}
+      </div>
+
+      {form && <TransactionForm type={type} editing={form.editing} onClose={() => setForm(null)} />}
+    </div>
+  )
+}
+
+function Mini({ label, value, alert }: { label: string; value: number; alert?: boolean }) {
+  return (
+    <div className={cn('card p-3', alert && 'ring-red-300 dark:ring-red-900')}>
+      <p className="text-[11px] font-medium uppercase tracking-wide text-slate-500">{label}</p>
+      <p className={cn('mt-1 text-sm font-bold tabular-nums', alert && 'text-red-700 dark:text-red-400')}>{money(value)}</p>
+    </div>
+  )
+}

@@ -1,0 +1,18 @@
+{
+  "name": "Financeiro Z-TEC & Amaral",
+  "short_name": "Financeiro",
+  "description": "Contas a pagar, a receber e fluxo de caixa da Z-TEC Quarteirização Contábil e Amaral Contabilidade",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0f172a",
+  "theme_color": "#0f172a",
+  "lang": "pt-BR",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml" }
+  ]
+}
