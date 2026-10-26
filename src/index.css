@@ -37,6 +37,10 @@ body::before {
   z-index: 30;
   background: var(--topo);
 }
+.fab {
+  right: max(16px, env(safe-area-inset-right, 0px));
+  bottom: calc(84px + env(safe-area-inset-bottom, 0px));
+}
 .sticky-top {
   top: env(safe-area-inset-top, 0px);
 }

@@ -82,7 +82,6 @@ export default function Ajustes() {
 
   return (
     <div className="space-y-4">
-      <h2 className="text-xl font-bold">Ajustes</h2>
       {msg && <p className="rounded-xl bg-green-50 p-3 text-sm text-green-800 dark:bg-green-950 dark:text-green-300">{msg}</p>}
 
       <CloudAccount />

@@ -27,17 +27,11 @@ export default function Dashboard({ month, onNavigate }: { month: string; onNavi
     [list, month],
   )
 
-  const title = company === 'todas' ? 'Consolidado das duas empresas' : COMPANIES[company].name
 
   return (
     <div className="space-y-4">
       {/* Sem login, os lançamentos da nuvem não chegam: mostra a entrada logo no início. */}
       {!session && <CloudAccount />}
-
-      <div>
-        <p className="text-xs font-medium uppercase tracking-wide text-slate-500">{monthLabel(month)}</p>
-        <h2 className="text-xl font-bold leading-tight">{title}</h2>
-      </div>
 
       <section className="rounded-2xl bg-gradient-to-br from-blue-700 to-slate-900 p-5 text-white shadow-lg">
         <p className="text-sm text-blue-100">Resultado previsto do mês</p>

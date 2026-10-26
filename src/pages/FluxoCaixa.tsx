@@ -56,7 +56,6 @@ export default function FluxoCaixa() {
 
   return (
     <div className="space-y-4">
-      <h2 className="text-xl font-bold">Fluxo de caixa</h2>
 
       <div className="grid grid-cols-2 gap-1 rounded-xl bg-slate-200 p-1 dark:bg-slate-800">
         {(['previsto', 'realizado'] as Mode[]).map((m) => (

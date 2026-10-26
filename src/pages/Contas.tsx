@@ -4,7 +4,7 @@ import TransactionForm from '../components/TransactionForm'
 import TransactionItem from '../components/TransactionItem'
 import { useFiltered } from '../store'
 import type { Transaction, TxStatus, TxType } from '../types'
-import { cn, monthKey, monthLabel, money, statusOf, sum, todayISO } from '../lib/utils'
+import { cn, monthKey, money, statusOf, sum, todayISO } from '../lib/utils'
 
 type StatusFilter = 'aberto' | 'vencido' | 'pago' | 'todos'
 
@@ -51,16 +51,6 @@ export default function Contas({ type, month }: { type: TxType; month: string })
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <div>
-          <p className="text-xs font-medium uppercase tracking-wide text-slate-500">{monthLabel(month)}</p>
-          <h2 className="text-xl font-bold leading-tight">Contas a {isPagar ? 'pagar' : 'receber'}</h2>
-        </div>
-        <button className="btn-primary" onClick={() => setForm({})}>
-          <Plus className="h-4 w-4" /> Nova
-        </button>
-      </div>
-
       <div className="grid grid-cols-3 gap-2">
         <Mini label="Em aberto" value={totals.aberto} />
         <Mini label="Vencido" value={totals.vencido} alert={totals.vencido > 0} />
@@ -109,6 +99,15 @@ export default function Contas({ type, month }: { type: TxType; month: string })
           </>
         )}
       </div>
+
+      {/* Botão fixo para lançar: não some ao rolar a lista. */}
+      <button
+        onClick={() => setForm({})}
+        aria-label={isPagar ? 'Nova conta a pagar' : 'Nova conta a receber'}
+        className="fab fixed z-30 flex h-14 w-14 items-center justify-center rounded-full bg-blue-600 text-white shadow-lg active:scale-95"
+      >
+        <Plus className="h-7 w-7" />
+      </button>
 
       {form && <TransactionForm type={type} editing={form.editing} onClose={() => setForm(null)} />}
     </div>

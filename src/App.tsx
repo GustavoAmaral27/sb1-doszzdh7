@@ -9,6 +9,7 @@ import MonthNav from './components/MonthNav'
 import { FIRST_MONTH } from './lib/finance'
 import { cn, monthKey, todayISO } from './lib/utils'
 import { useStore } from './store'
+import { COMPANIES } from './types'
 
 export type Tab = 'inicio' | 'pagar' | 'receber' | 'fluxo' | 'ajustes'
 
@@ -20,7 +21,16 @@ const TABS: { id: Tab; label: string; icon: typeof LayoutDashboard }[] = [
   { id: 'ajustes', label: 'Ajustes', icon: SettingsIcon },
 ]
 
+const PAGE_TITLE: Record<Tab, string> = {
+  inicio: 'Visão geral',
+  pagar: 'Contas a pagar',
+  receber: 'Contas a receber',
+  fluxo: 'Fluxo de caixa',
+  ajustes: 'Ajustes',
+}
+
 export default function App() {
+  const { company } = useStore()
   const [tab, setTab] = useState<Tab>('inicio')
   const [month, setMonth] = useState(() => (monthKey(todayISO()) > FIRST_MONTH ? monthKey(todayISO()) : FIRST_MONTH))
 
@@ -29,10 +39,12 @@ export default function App() {
       <header className="sticky-top sticky z-20 bg-slate-900 text-white shadow-md">
         <div className="px-4 pb-3 pt-3">
           <div className="flex items-center justify-between gap-2">
-            <h1 className="text-lg font-bold leading-tight">Financeiro</h1>
+            <h1 className="text-lg font-bold leading-tight">{PAGE_TITLE[tab]}</h1>
             <SyncStatus />
           </div>
-          <p className="text-xs text-slate-400">Z-TEC Quarteirização Contábil · Amaral Contabilidade</p>
+          <p className="truncate text-xs text-slate-400">
+            {company === 'todas' ? 'Consolidado das duas empresas' : COMPANIES[company].name}
+          </p>
           <div className="mt-3">
             <CompanySelector />
             {(tab === 'inicio' || tab === 'pagar' || tab === 'receber') && (
