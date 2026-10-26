@@ -49,6 +49,11 @@ export const CATEGORIES: Record<TxType, string[]> = {
     'Material de escritório',
     'Marketing',
     'Tarifas bancárias',
+    'Empréstimos',
+    'Cartão de crédito',
+    'Educação',
+    'Investimentos',
+    'Carro e viagem',
     'Outros',
   ],
   receber: [
