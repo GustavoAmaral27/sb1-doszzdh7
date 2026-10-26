@@ -1,8 +1,16 @@
 import type { Transaction } from '../types'
 import { monthKey, statusOf, sum, todayISO } from './utils'
 
-/** Primeiro mês acompanhado no app. */
+/** Primeiro e último mês acompanhados no app (a projeção vai até dez/2028). */
 export const FIRST_MONTH = '2026-11'
+export const LAST_MONTH = '2028-12'
+
+/** Quantos meses do mês de `iso` até LAST_MONTH, inclusive (mínimo 1). */
+export function monthsUntilLast(iso: string) {
+  const [y, m] = iso.slice(0, 7).split('-').map(Number)
+  const [ly, lm] = LAST_MONTH.split('-').map(Number)
+  return Math.max(1, (ly - y) * 12 + (lm - m) + 1)
+}
 
 export interface MonthSummary {
   receber: number

@@ -4,6 +4,7 @@ import Sheet from './Sheet'
 import ConfirmButton from './ConfirmButton'
 import { useStore } from '../store'
 import { CATEGORIES, COMPANIES, COMPANY_IDS, type CompanyId, type Transaction, type TxType } from '../types'
+import { monthsUntilLast } from '../lib/finance'
 import { addMonths, cn, parseMoney, todayISO, uid } from '../lib/utils'
 
 interface Props {
@@ -27,6 +28,7 @@ export default function TransactionForm({ type, editing, onClose }: Props) {
     paidDate: editing?.paidDate ?? todayISO(),
     notes: editing?.notes ?? '',
     repeat: 1,
+    fixo: false,
   })
   const [error, setError] = useState('')
   const set = <K extends keyof typeof form>(k: K, v: (typeof form)[K]) => setForm((f) => ({ ...f, [k]: v }))
@@ -57,13 +59,15 @@ export default function TransactionForm({ type, editing, onClose }: Props) {
         paidDate: form.paid ? form.paidDate || form.dueDate : undefined,
       })
     } else {
-      const n = Math.max(1, Math.min(60, Number(form.repeat) || 1))
+      // Mensal fixo: um lançamento por mês até o fim da projeção; senão, parcelas (1/n, 2/n…).
+      const n = form.fixo ? monthsUntilLast(form.dueDate) : Math.max(1, Math.min(60, Number(form.repeat) || 1))
+      const parcelas = !form.fixo && n > 1
       const now = new Date().toISOString()
       addMany(
         Array.from({ length: n }, (_, i) => ({
           ...base,
           id: uid(),
-          description: n > 1 ? `${base.description} (${i + 1}/${n})` : base.description,
+          description: parcelas ? `${base.description} (${i + 1}/${n})` : base.description,
           dueDate: addMonths(form.dueDate, i),
           // só a primeira parcela pode já nascer paga
           paid: i === 0 && form.paid,
@@ -133,10 +137,18 @@ export default function TransactionForm({ type, editing, onClose }: Props) {
         </div>
 
         {!editing && (
-          <div>
-            <label className="label" htmlFor="repeat">Repetir todo mês (quantidade de meses)</label>
-            <input id="repeat" type="number" min={1} max={60} className="input" value={form.repeat} onChange={(e) => set('repeat', Number(e.target.value))} />
-            <p className="mt-1 text-xs text-slate-500">1 = lançamento único. Ex.: 12 cria um lançamento por mês durante 1 ano.</p>
+          <div className="space-y-2">
+            <label className="flex items-center gap-3 rounded-xl bg-slate-50 p-3 dark:bg-slate-800">
+              <input type="checkbox" className="h-5 w-5 accent-blue-600" checked={form.fixo} onChange={(e) => set('fixo', e.target.checked)} />
+              <span className="text-sm font-medium">Mensal fixo: repete todo mês até dez/2028</span>
+            </label>
+            {!form.fixo && (
+              <div>
+                <label className="label" htmlFor="repeat">Parcelas</label>
+                <input id="repeat" type="number" min={1} max={60} className="input" value={form.repeat} onChange={(e) => set('repeat', Number(e.target.value))} />
+                <p className="mt-1 text-xs text-slate-500">1 = lançamento único. Ex.: 5 cria 5 parcelas mensais (1/5 a 5/5).</p>
+              </div>
+            )}
           </div>
         )}
 

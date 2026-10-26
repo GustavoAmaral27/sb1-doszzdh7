@@ -4,7 +4,7 @@ import CloudAccount from '../components/CloudAccount'
 import CompanyBadge from '../components/CompanyBadge'
 import { useFiltered, useStore } from '../store'
 import { COMPANIES, COMPANY_IDS } from '../types'
-import { FIRST_MONTH, summarizeMonth } from '../lib/finance'
+import { FIRST_MONTH, LAST_MONTH, summarizeMonth } from '../lib/finance'
 import { cn, fmtDate, monthKey, monthLabel, money, shiftMonth, statusOf, todayISO } from '../lib/utils'
 import type { Tab } from '../App'
 
@@ -30,6 +30,7 @@ export default function Dashboard({ onNavigate }: { onNavigate: (t: Tab) => void
 
   const title = company === 'todas' ? 'Consolidado das duas empresas' : COMPANIES[company].name
   const canGoBack = month > FIRST_MONTH
+  const canGoForward = month < LAST_MONTH
 
   return (
     <div className="space-y-4">
@@ -49,7 +50,12 @@ export default function Dashboard({ onNavigate }: { onNavigate: (t: Tab) => void
           <p className="font-bold">{monthLabel(month)}</p>
           <p className="text-[11px] text-slate-500">{title}</p>
         </div>
-        <button className="rounded-lg p-2" aria-label="Próximo mês" onClick={() => setMonth(shiftMonth(month, 1))}>
+        <button
+          className="rounded-lg p-2 disabled:opacity-30"
+          aria-label="Próximo mês"
+          disabled={!canGoForward}
+          onClick={() => setMonth(shiftMonth(month, 1))}
+        >
           <ChevronRight className="h-5 w-5" />
         </button>
       </div>
