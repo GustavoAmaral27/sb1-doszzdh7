@@ -42,9 +42,10 @@ self.addEventListener('fetch', (e) => {
   if (req.method !== 'GET' || new URL(req.url).origin !== self.location.origin) return
 
   // Páginas: tenta a internet (para pegar atualizações) e, sem conexão, usa a cópia guardada.
+  // 'no-cache' evita a cópia de até 10 min que o GitHub Pages deixa no navegador.
   if (req.mode === 'navigate') {
     e.respondWith(
-      fetch(req)
+      fetch(req.url, { cache: 'no-cache', credentials: 'same-origin' })
         .then((res) => {
           const copy = res.clone()
           caches.open(CACHE).then((c) => c.put('./', copy))
