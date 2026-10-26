@@ -62,10 +62,10 @@ export default function CloudAccount() {
     <section className="card space-y-3">
       <div>
         <h3 className="flex items-center gap-2 font-bold">
-          <Cloud className="h-5 w-5 text-blue-600" /> Sincronizar com a nuvem
+          <Cloud className="h-5 w-5 text-blue-600" /> Entrar para ver seus lançamentos
         </h3>
         <p className="text-xs text-slate-500">
-          Entre com seu e-mail para os lançamentos ficarem guardados na nuvem e chegarem sozinhos neste celular. Só você vê os seus dados.
+          Entre uma vez com seu e-mail e senha: os lançamentos ficam guardados na nuvem e chegam sozinhos neste celular. Só você vê os seus dados.
         </p>
       </div>
       <form className="space-y-2" onSubmit={(e) => submit(e, 'entrar')}>

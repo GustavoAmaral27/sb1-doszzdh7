@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import { AlertTriangle, ArrowDownCircle, ArrowUpCircle, ChevronRight, Wallet } from 'lucide-react'
+import CloudAccount from '../components/CloudAccount'
 import CompanyBadge from '../components/CompanyBadge'
 import { useFiltered, useInitialBalance, useStore } from '../store'
 import { COMPANIES, COMPANY_IDS } from '../types'
@@ -8,7 +9,7 @@ import { cn, fmtDate, monthKey, monthLabel, money, statusOf, todayISO } from '..
 import type { Tab } from '../App'
 
 export default function Dashboard({ onNavigate }: { onNavigate: (t: Tab) => void }) {
-  const { transactions, settings, company } = useStore()
+  const { transactions, settings, company, session } = useStore()
   const list = useFiltered()
   const initial = useInitialBalance()
   const today = todayISO()
@@ -40,6 +41,8 @@ export default function Dashboard({ onNavigate }: { onNavigate: (t: Tab) => void
 
   return (
     <div className="space-y-4">
+      {/* Sem login, os lançamentos da nuvem não chegam: mostra a entrada logo no início. */}
+      {!session && <CloudAccount />}
       <div>
         <p className="text-xs font-medium uppercase tracking-wide text-slate-500">Visão geral</p>
         <h2 className="text-xl font-bold leading-tight">{title}</h2>
