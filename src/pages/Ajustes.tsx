@@ -8,7 +8,7 @@ import { money, parseMoney, todayISO } from '../lib/utils'
 const fmtBalance = (v: number) => v.toFixed(2).replace('.', ',')
 
 export default function Ajustes() {
-  const { settings, setSettings, transactions, replaceAll, mode } = useStore()
+  const { settings, setSettings, transactions, replaceAll, addMany, mode } = useStore()
   const [balances, setBalances] = useState<Record<CompanyId, string>>(() => ({
     ztec: fmtBalance(settings.initialBalance.ztec),
     amaral: fmtBalance(settings.initialBalance.amaral),
@@ -65,6 +65,17 @@ export default function Ajustes() {
     } catch {
       setMsg('Arquivo de backup inválido.')
     }
+  }
+
+  /** Soma os lançamentos do arquivo aos atuais, sem repetir os que já existem. */
+  function addToCurrent() {
+    if (!pending) return
+    const existing = new Set(transactions.map((t) => t.id))
+    const novos = pending.transactions.filter((t) => !existing.has(t.id))
+    setPending(null)
+    addMany(novos)
+    const repetidos = pending.transactions.length - novos.length
+    setMsg(`${novos.length} lançamento(s) adicionado(s).${repetidos ? ` ${repetidos} já existia(m) e foi(ram) ignorado(s).` : ''}`)
   }
 
   async function restore() {
@@ -127,7 +138,7 @@ export default function Ajustes() {
             <Download className="h-4 w-4" /> Exportar
           </button>
           <button className="btn-ghost" onClick={() => fileRef.current?.click()}>
-            <Upload className="h-4 w-4" /> Restaurar
+            <Upload className="h-4 w-4" /> Importar
           </button>
         </div>
         <input
@@ -144,11 +155,12 @@ export default function Ajustes() {
         {pending && (
           <div className="space-y-2 rounded-xl bg-amber-50 p-3 text-sm text-amber-900 dark:bg-amber-950 dark:text-amber-200">
             <p>
-              Restaurar <b>{pending.transactions.length}</b> lançamento(s)? Os {transactions.length} lançamento(s) atuais serão substituídos.
+              O arquivo tem <b>{pending.transactions.length}</b> lançamento(s). Você tem {transactions.length} hoje.
             </p>
+            <button className="btn-primary w-full" onClick={addToCurrent}>Adicionar aos atuais</button>
             <div className="grid grid-cols-2 gap-2">
               <button className="btn-ghost" onClick={() => setPending(null)}>Cancelar</button>
-              <button className="btn-primary" onClick={restore}>Restaurar</button>
+              <button className="btn bg-red-50 text-red-700 dark:bg-red-950 dark:text-red-300" onClick={restore}>Substituir tudo</button>
             </div>
           </div>
         )}
