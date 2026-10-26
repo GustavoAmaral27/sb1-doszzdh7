@@ -9,7 +9,7 @@ import MonthNav from './components/MonthNav'
 import { FIRST_MONTH } from './lib/finance'
 import { cn, monthKey, todayISO } from './lib/utils'
 import { useStore } from './store'
-import { COMPANIES } from './types'
+import { ALL_COMPANIES_LABEL, COMPANIES } from './types'
 
 export type Tab = 'inicio' | 'pagar' | 'receber' | 'fluxo' | 'ajustes'
 
@@ -45,7 +45,7 @@ export default function App() {
             <SyncStatus />
           </div>
           <p className="truncate text-xs text-slate-400">
-            {company === 'todas' ? 'Consolidado das duas empresas' : COMPANIES[company].name}
+            {company === 'todas' ? ALL_COMPANIES_LABEL : COMPANIES[company].name}
           </p>
           <div className="mt-3">
             <CompanySelector />

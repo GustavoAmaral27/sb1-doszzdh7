@@ -10,10 +10,9 @@ const fmtBalance = (v: number) => v.toFixed(2).replace('.', ',')
 
 export default function Ajustes() {
   const { settings, setSettings, transactions, replaceAll, addMany } = useStore()
-  const [balances, setBalances] = useState<Record<CompanyId, string>>(() => ({
-    ztec: fmtBalance(settings.initialBalance.ztec),
-    amaral: fmtBalance(settings.initialBalance.amaral),
-  }))
+  const toInputs = (s: Settings) =>
+    Object.fromEntries(COMPANY_IDS.map((id) => [id, fmtBalance(s.initialBalance[id] ?? 0)])) as Record<CompanyId, string>
+  const [balances, setBalances] = useState<Record<CompanyId, string>>(() => toInputs(settings))
   const [msg, setMsg] = useState('')
   const [pending, setPending] = useState<{ transactions: Transaction[]; settings?: Settings } | null>(null)
   const fileRef = useRef<HTMLInputElement>(null)
@@ -75,7 +74,7 @@ export default function Ajustes() {
     setPending(null)
     replaceAll(data)
     if (data.settings) {
-      setBalances({ ztec: fmtBalance(data.settings.initialBalance.ztec), amaral: fmtBalance(data.settings.initialBalance.amaral) })
+      setBalances(toInputs({ ...data.settings, initialBalance: { ...settings.initialBalance, ...data.settings.initialBalance } }))
     }
     setMsg('Backup restaurado.')
   }
@@ -103,7 +102,7 @@ export default function Ajustes() {
             />
           </div>
         ))}
-        <p className="text-xs text-slate-500">Atual: {COMPANY_IDS.map((id) => `${COMPANIES[id].short} ${money(settings.initialBalance[id])}`).join(' · ')}</p>
+        <p className="text-xs text-slate-500">Atual: {COMPANY_IDS.map((id) => `${COMPANIES[id].short} ${money(settings.initialBalance[id] ?? 0)}`).join(' · ')}</p>
         <button className="btn-primary w-full" onClick={saveBalances}>Salvar saldos</button>
       </section>
 

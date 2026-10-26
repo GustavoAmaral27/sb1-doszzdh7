@@ -1,5 +1,5 @@
 import { supabase } from './supabase'
-import type { Settings, Transaction } from '../types'
+import { zeroBalances, type Settings, type Transaction } from '../types'
 
 /** Linha da tabela fin_lancamentos. */
 interface Row {
@@ -96,7 +96,7 @@ export async function syncAll(local: Transaction[], settings: Settings, userId: 
   if (cfgErr) throw cfgErr
   let mergedSettings = settings
   if (cfg && !newer(settings.updatedAt, cfg.updated_at)) {
-    mergedSettings = { initialBalance: { ztec: 0, amaral: 0, ...cfg.initial_balance }, updatedAt: cfg.updated_at }
+    mergedSettings = { initialBalance: { ...zeroBalances(), ...cfg.initial_balance }, updatedAt: cfg.updated_at }
   } else if (!cfg || newer(settings.updatedAt, cfg.updated_at)) {
     const { error } = await supabase.from('fin_config').upsert({
       user_id: userId,

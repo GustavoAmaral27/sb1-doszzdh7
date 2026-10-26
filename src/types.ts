@@ -1,4 +1,4 @@
-export type CompanyId = 'ztec' | 'amaral'
+export type CompanyId = 'ztec' | 'amaral' | 'versure'
 export type CompanyFilter = CompanyId | 'todas'
 export type TxType = 'pagar' | 'receber'
 export type TxStatus = 'pendente' | 'vencido' | 'pago'
@@ -32,9 +32,15 @@ export interface Settings {
 export const COMPANIES: Record<CompanyId, { name: string; short: string; dot: string }> = {
   ztec: { name: 'Z-TEC Quarteirização Contábil', short: 'Z-TEC', dot: 'bg-violet-600' },
   amaral: { name: 'Amaral Contabilidade', short: 'Amaral', dot: 'bg-teal-600' },
+  versure: { name: 'Versure Digital', short: 'Versure', dot: 'bg-amber-500' },
 }
 
 export const COMPANY_IDS = Object.keys(COMPANIES) as CompanyId[]
+
+/** Saldo inicial zerado para todas as empresas. */
+export const zeroBalances = () => Object.fromEntries(COMPANY_IDS.map((id) => [id, 0])) as Record<CompanyId, number>
+
+export const ALL_COMPANIES_LABEL = 'Consolidado das empresas'
 
 export const CATEGORIES: Record<TxType, string[]> = {
   pagar: [

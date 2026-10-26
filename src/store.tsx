@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import type { Session } from '@supabase/supabase-js'
-import type { CompanyFilter, Settings, Transaction } from './types'
+import { COMPANY_IDS, zeroBalances, type CompanyFilter, type Settings, type Transaction } from './types'
 import { supabase } from './lib/supabase'
 import { syncAll } from './lib/sync'
 
@@ -9,7 +9,7 @@ const SETTINGS_KEY = 'financeiro:config'
 const FILTER_KEY = 'financeiro:empresa'
 const LAST_SYNC_KEY = 'financeiro:ultima-sincronizacao'
 
-const defaultSettings: Settings = { initialBalance: { ztec: 0, amaral: 0 } }
+const defaultSettings: Settings = { initialBalance: zeroBalances() }
 
 /** offline = sem internet; desconectado = sem login; erro = falhou a última tentativa */
 export type SyncState = 'desconectado' | 'sincronizando' | 'sincronizado' | 'offline' | 'erro'
@@ -32,6 +32,11 @@ function save(key: string, value: unknown) {
 }
 
 const now = () => new Date().toISOString()
+
+/** Garante saldo inicial para todas as empresas (configs antigas só tinham Z-TEC e Amaral). */
+function withAllCompanies(s: Partial<Settings> | undefined): Settings {
+  return { ...s, initialBalance: { ...zeroBalances(), ...(s?.initialBalance ?? {}) } }
+}
 
 interface Store {
   /** Lançamentos visíveis (sem os excluídos). */
@@ -56,7 +61,7 @@ const Ctx = createContext<Store | null>(null)
 export function StoreProvider({ children }: { children: ReactNode }) {
   // Inclui os excluídos (com deleted: true) para a nuvem saber que foram apagados.
   const [all, setAll] = useState<Transaction[]>(() => load(TX_KEY, []))
-  const [settings, setSettingsState] = useState<Settings>(() => ({ ...defaultSettings, ...load(SETTINGS_KEY, defaultSettings) }))
+  const [settings, setSettingsState] = useState<Settings>(() => (withAllCompanies(load(SETTINGS_KEY, defaultSettings))))
   const [company, setCompany] = useState<CompanyFilter>(() => load(FILTER_KEY, 'todas'))
   const [session, setSession] = useState<Session | null>(null)
   const [syncState, setSyncState] = useState<SyncState>('desconectado')
@@ -191,7 +196,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
           ...prev.filter((p) => !keep.has(p.id)).map((p) => ({ ...p, deleted: true, updatedAt: t })),
           ...data.transactions.map((x) => ({ ...x, deleted: false, updatedAt: t })),
         ])
-        if (data.settings) setSettingsState({ ...defaultSettings, ...data.settings, updatedAt: t })
+        if (data.settings) setSettingsState({ ...withAllCompanies(data.settings), updatedAt: t })
       },
     }
   }, [all, settings, company, session, syncState, lastSync, syncNow, scheduleSync])
@@ -205,7 +210,7 @@ export function useStore() {
   return s
 }
 
-/** Lançamentos filtrados pela empresa selecionada ("todas" = soma das duas). */
+/** Lançamentos filtrados pela empresa selecionada ("todas" = soma de todas). */
 export function useFiltered() {
   const { transactions, company } = useStore()
   return useMemo(
@@ -217,6 +222,6 @@ export function useFiltered() {
 export function useInitialBalance() {
   const { settings, company } = useStore()
   return company === 'todas'
-    ? settings.initialBalance.ztec + settings.initialBalance.amaral
-    : settings.initialBalance[company]
+    ? COMPANY_IDS.reduce((acc, id) => acc + (settings.initialBalance[id] ?? 0), 0)
+    : settings.initialBalance[company] ?? 0
 }

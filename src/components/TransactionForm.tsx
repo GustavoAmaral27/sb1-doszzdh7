@@ -88,21 +88,21 @@ export default function TransactionForm({ type, month, editing, onClose }: Props
       <form onSubmit={submit} className="space-y-4">
         <div>
           <span className="label">Empresa</span>
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-3 gap-2">
             {COMPANY_IDS.map((id) => (
               <button
                 type="button"
                 key={id}
                 onClick={() => set('company', id)}
                 className={cn(
-                  'flex items-center gap-2 rounded-xl border px-3 py-2.5 text-left text-sm font-semibold',
+                  'flex min-w-0 items-center justify-center gap-1.5 rounded-xl border px-2 py-2.5 text-sm font-semibold',
                   form.company === id
                     ? 'border-blue-600 bg-blue-50 text-blue-900 dark:bg-blue-950 dark:text-blue-100'
                     : 'border-slate-300 dark:border-slate-700',
                 )}
               >
                 <span className={cn('h-2.5 w-2.5 shrink-0 rounded-full', COMPANIES[id].dot)} />
-                <span className="leading-tight">{COMPANIES[id].name}</span>
+                <span className="truncate">{COMPANIES[id].short}</span>
               </button>
             ))}
           </div>
