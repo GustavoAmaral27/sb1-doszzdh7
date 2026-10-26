@@ -1,23 +1,25 @@
 import { useRef, useState } from 'react'
-import { ArrowDownCircle, Cloud, CloudOff, HardDrive, RefreshCw, ArrowUpCircle, LayoutDashboard, LineChart, Settings as SettingsIcon } from 'lucide-react'
+import { ArrowDownCircle, Cloud, CloudOff, HardDrive, RefreshCw, ArrowUpCircle, LayoutDashboard, LineChart, Settings as SettingsIcon, TrendingUp } from 'lucide-react'
 import CompanySelector from './components/CompanySelector'
 import Dashboard from './pages/Dashboard'
 import Contas from './pages/Contas'
 import FluxoCaixa from './pages/FluxoCaixa'
 import Ajustes from './pages/Ajustes'
+import Projecao from './pages/Projecao'
 import MonthNav from './components/MonthNav'
 import { FIRST_MONTH } from './lib/finance'
 import { cn, monthKey, todayISO } from './lib/utils'
 import { useStore } from './store'
 import { ALL_COMPANIES_LABEL, COMPANIES } from './types'
 
-export type Tab = 'inicio' | 'pagar' | 'receber' | 'fluxo' | 'ajustes'
+export type Tab = 'inicio' | 'pagar' | 'receber' | 'fluxo' | 'projecao' | 'ajustes'
 
 const TABS: { id: Tab; label: string; icon: typeof LayoutDashboard }[] = [
   { id: 'inicio', label: 'Início', icon: LayoutDashboard },
   { id: 'pagar', label: 'A pagar', icon: ArrowUpCircle },
   { id: 'receber', label: 'A receber', icon: ArrowDownCircle },
   { id: 'fluxo', label: 'Fluxo', icon: LineChart },
+  { id: 'projecao', label: 'Projeção', icon: TrendingUp },
   { id: 'ajustes', label: 'Ajustes', icon: SettingsIcon },
 ]
 
@@ -26,6 +28,7 @@ const PAGE_TITLE: Record<Tab, string> = {
   pagar: 'Contas a pagar',
   receber: 'Contas a receber',
   fluxo: 'Fluxo de caixa',
+  projecao: 'Projeção',
   ajustes: 'Ajustes',
 }
 
@@ -63,11 +66,12 @@ export default function App() {
         {tab === 'pagar' && <Contas key="pagar" type="pagar" month={month} />}
         {tab === 'receber' && <Contas key="receber" type="receber" month={month} />}
         {tab === 'fluxo' && <FluxoCaixa />}
+        {tab === 'projecao' && <Projecao />}
         {tab === 'ajustes' && <Ajustes />}
       </main>
 
       <nav className="tabbar z-20 shrink-0 border-t border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
-        <div className="grid grid-cols-5">
+        <div className="grid grid-cols-6">
           {TABS.map(({ id, label, icon: Icon }) => (
             <button
               key={id}
@@ -76,7 +80,7 @@ export default function App() {
                 mainRef.current?.scrollTo({ top: 0 })
               }}
               className={cn(
-                'flex flex-col items-center gap-0.5 pb-1 pt-2 text-[11px] font-medium',
+                'flex min-w-0 flex-col items-center gap-0.5 pb-1 pt-2 text-[10.5px] font-medium',
                 tab === id ? 'text-blue-600 dark:text-blue-400' : 'text-slate-500 dark:text-slate-400',
               )}
             >
