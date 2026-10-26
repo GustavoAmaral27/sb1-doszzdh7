@@ -109,7 +109,7 @@ export default function Contas({ type, month }: { type: TxType; month: string })
         <Plus className="h-7 w-7" />
       </button>
 
-      {form && <TransactionForm type={type} editing={form.editing} onClose={() => setForm(null)} />}
+      {form && <TransactionForm type={type} month={month} editing={form.editing} onClose={() => setForm(null)} />}
     </div>
   )
 }

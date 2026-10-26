@@ -9,11 +9,13 @@ import { addMonths, cn, parseMoney, todayISO, uid } from '../lib/utils'
 
 interface Props {
   type: TxType
+  /** Mês selecionado (AAAA-MM): a conta nova nasce nele. */
+  month?: string
   editing?: Transaction
   onClose: () => void
 }
 
-export default function TransactionForm({ type, editing, onClose }: Props) {
+export default function TransactionForm({ type, month, editing, onClose }: Props) {
   const { company, addMany, update, remove } = useStore()
   const isPagar = type === 'pagar'
 
@@ -23,7 +25,7 @@ export default function TransactionForm({ type, editing, onClose }: Props) {
     party: editing?.party ?? '',
     category: editing?.category ?? CATEGORIES[type][0],
     amount: editing ? editing.amount.toFixed(2).replace('.', ',') : '',
-    dueDate: editing?.dueDate ?? todayISO(),
+    dueDate: editing?.dueDate ?? defaultDueDate(month),
     paid: editing?.paid ?? false,
     paidDate: editing?.paidDate ?? todayISO(),
     notes: editing?.notes ?? '',
@@ -187,4 +189,11 @@ export default function TransactionForm({ type, editing, onClose }: Props) {
       </form>
     </Sheet>
   )
+}
+
+/** Hoje, se o mês selecionado é o atual; senão, o mesmo dia dentro do mês selecionado. */
+function defaultDueDate(month?: string) {
+  const today = todayISO()
+  if (!month || month === today.slice(0, 7)) return today
+  return `${month}-${String(Math.min(Number(today.slice(8)), 28)).padStart(2, '0')}`
 }
