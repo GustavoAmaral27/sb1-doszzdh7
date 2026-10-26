@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { ArrowDownCircle, Cloud, CloudOff, HardDrive, RefreshCw, ArrowUpCircle, LayoutDashboard, LineChart, Settings as SettingsIcon } from 'lucide-react'
 import CompanySelector from './components/CompanySelector'
 import Dashboard from './pages/Dashboard'
@@ -33,10 +33,12 @@ export default function App() {
   const { company } = useStore()
   const [tab, setTab] = useState<Tab>('inicio')
   const [month, setMonth] = useState(() => (monthKey(todayISO()) > FIRST_MONTH ? monthKey(todayISO()) : FIRST_MONTH))
+  const mainRef = useRef<HTMLElement>(null)
 
   return (
-    <div className="mx-auto flex min-h-screen max-w-2xl flex-col text-slate-900 dark:text-slate-100">
-      <header className="sticky-top sticky z-20 bg-slate-900 text-white shadow-md">
+    // Estrutura de app: topo e menu parados, só a área do meio rola (nada passa por baixo deles).
+    <div className="app-shell mx-auto flex max-w-2xl flex-col overflow-hidden text-slate-900 dark:text-slate-100">
+      <header className="pt-safe z-20 shrink-0 bg-slate-900 text-white shadow-md">
         <div className="px-4 pb-3 pt-3">
           <div className="flex items-center justify-between gap-2">
             <h1 className="text-lg font-bold leading-tight">{PAGE_TITLE[tab]}</h1>
@@ -56,7 +58,7 @@ export default function App() {
         </div>
       </header>
 
-      <main className="flex-1 px-4 pb-28 pt-4">
+      <main ref={mainRef} className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pb-24 pt-4">
         {tab === 'inicio' && <Dashboard month={month} onNavigate={setTab} />}
         {tab === 'pagar' && <Contas key="pagar" type="pagar" month={month} />}
         {tab === 'receber' && <Contas key="receber" type="receber" month={month} />}
@@ -64,14 +66,14 @@ export default function App() {
         {tab === 'ajustes' && <Ajustes />}
       </main>
 
-      <nav className="pb-safe fixed inset-x-0 bottom-0 z-20 border-t border-slate-200 bg-white/95 backdrop-blur dark:border-slate-800 dark:bg-slate-900/95">
-        <div className="mx-auto grid max-w-2xl grid-cols-5">
+      <nav className="pb-safe z-20 shrink-0 border-t border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
+        <div className="grid grid-cols-5">
           {TABS.map(({ id, label, icon: Icon }) => (
             <button
               key={id}
               onClick={() => {
                 setTab(id)
-                window.scrollTo({ top: 0 })
+                mainRef.current?.scrollTo({ top: 0 })
               }}
               className={cn(
                 'flex flex-col items-center gap-0.5 py-2.5 text-[11px] font-medium',

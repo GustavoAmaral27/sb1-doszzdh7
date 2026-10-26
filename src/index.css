@@ -24,25 +24,28 @@
   color-scheme: dark;
 }
 
+html,
+body,
+#root {
+  height: 100%;
+}
 body {
   background: var(--fundo);
-  overscroll-behavior-y: none;
+  overflow: hidden;
+  overscroll-behavior: none;
 }
-/* pinta a faixa da barra de status com a cor do cabeçalho */
-body::before {
-  content: '';
-  position: fixed;
-  inset: 0 0 auto;
-  height: env(safe-area-inset-top, 0px);
-  z-index: 30;
-  background: var(--topo);
+/* Ocupa exatamente a tela visível (inclusive com a barra do Safari aparecendo/sumindo). */
+.app-shell {
+  height: 100vh;
+  height: 100dvh;
 }
+main {
+  -webkit-overflow-scrolling: touch;
+}
+
 .fab {
   right: max(16px, env(safe-area-inset-right, 0px));
-  bottom: calc(84px + env(safe-area-inset-bottom, 0px));
-}
-.sticky-top {
-  top: env(safe-area-inset-top, 0px);
+  bottom: calc(80px + env(safe-area-inset-bottom, 0px));
 }
 
 .pb-safe {
