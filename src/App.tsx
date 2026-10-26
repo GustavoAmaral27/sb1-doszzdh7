@@ -66,7 +66,7 @@ export default function App() {
         {tab === 'ajustes' && <Ajustes />}
       </main>
 
-      <nav className="pb-safe z-20 shrink-0 border-t border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
+      <nav className="tabbar z-20 shrink-0 border-t border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
         <div className="grid grid-cols-5">
           {TABS.map(({ id, label, icon: Icon }) => (
             <button
@@ -76,7 +76,7 @@ export default function App() {
                 mainRef.current?.scrollTo({ top: 0 })
               }}
               className={cn(
-                'flex flex-col items-center gap-0.5 py-2.5 text-[11px] font-medium',
+                'flex flex-col items-center gap-0.5 pb-1 pt-2 text-[11px] font-medium',
                 tab === id ? 'text-blue-600 dark:text-blue-400' : 'text-slate-500 dark:text-slate-400',
               )}
             >

@@ -34,10 +34,15 @@ body {
   overflow: hidden;
   overscroll-behavior: none;
 }
-/* Ocupa exatamente a tela visível (inclusive com a barra do Safari aparecendo/sumindo). */
+/* Presa nas 4 bordas: ocupa a tela inteira mesmo no app instalado no iPhone,
+   onde 100vh/100dvh fica menor que a tela e deixava uma faixa vazia embaixo. */
 .app-shell {
-  height: 100vh;
-  height: 100dvh;
+  position: fixed;
+  inset: 0;
+}
+/* Menu de baixo no tamanho de app nativo: a área da barrinha do iPhone já dá o respiro. */
+.tabbar {
+  padding-bottom: max(4px, calc(env(safe-area-inset-bottom, 0px) - 12px));
 }
 main {
   -webkit-overflow-scrolling: touch;
