@@ -1,18 +1,17 @@
-import { useMemo, useState } from 'react'
-import { AlertTriangle, ArrowDownCircle, ArrowUpCircle, ChevronLeft, ChevronRight } from 'lucide-react'
+import { useMemo } from 'react'
+import { AlertTriangle, ArrowDownCircle, ArrowUpCircle } from 'lucide-react'
 import CloudAccount from '../components/CloudAccount'
 import CompanyBadge from '../components/CompanyBadge'
 import { useFiltered, useStore } from '../store'
 import { COMPANIES, COMPANY_IDS } from '../types'
-import { FIRST_MONTH, LAST_MONTH, summarizeMonth } from '../lib/finance'
-import { cn, fmtDate, monthKey, monthLabel, money, shiftMonth, statusOf, todayISO } from '../lib/utils'
+import { summarizeMonth } from '../lib/finance'
+import { cn, fmtDate, monthKey, monthLabel, money, statusOf, todayISO } from '../lib/utils'
 import type { Tab } from '../App'
 
-export default function Dashboard({ onNavigate }: { onNavigate: (t: Tab) => void }) {
+export default function Dashboard({ month, onNavigate }: { month: string; onNavigate: (t: Tab) => void }) {
   const { transactions, company, session } = useStore()
   const list = useFiltered()
   const today = todayISO()
-  const [month, setMonth] = useState(() => (monthKey(today) > FIRST_MONTH ? monthKey(today) : FIRST_MONTH))
   const s = useMemo(() => summarizeMonth(list, month, today), [list, month, today])
 
   const perCompany = useMemo(
@@ -29,35 +28,15 @@ export default function Dashboard({ onNavigate }: { onNavigate: (t: Tab) => void
   )
 
   const title = company === 'todas' ? 'Consolidado das duas empresas' : COMPANIES[company].name
-  const canGoBack = month > FIRST_MONTH
-  const canGoForward = month < LAST_MONTH
 
   return (
     <div className="space-y-4">
       {/* Sem login, os lançamentos da nuvem não chegam: mostra a entrada logo no início. */}
       {!session && <CloudAccount />}
 
-      <div className="card flex items-center justify-between p-2">
-        <button
-          className="rounded-lg p-2 disabled:opacity-30"
-          aria-label="Mês anterior"
-          disabled={!canGoBack}
-          onClick={() => setMonth(shiftMonth(month, -1))}
-        >
-          <ChevronLeft className="h-5 w-5" />
-        </button>
-        <div className="text-center">
-          <p className="font-bold">{monthLabel(month)}</p>
-          <p className="text-[11px] text-slate-500">{title}</p>
-        </div>
-        <button
-          className="rounded-lg p-2 disabled:opacity-30"
-          aria-label="Próximo mês"
-          disabled={!canGoForward}
-          onClick={() => setMonth(shiftMonth(month, 1))}
-        >
-          <ChevronRight className="h-5 w-5" />
-        </button>
+      <div>
+        <p className="text-xs font-medium uppercase tracking-wide text-slate-500">{monthLabel(month)}</p>
+        <h2 className="text-xl font-bold leading-tight">{title}</h2>
       </div>
 
       <section className="rounded-2xl bg-gradient-to-br from-blue-700 to-slate-900 p-5 text-white shadow-lg">

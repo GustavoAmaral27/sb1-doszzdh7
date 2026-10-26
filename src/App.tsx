@@ -5,7 +5,9 @@ import Dashboard from './pages/Dashboard'
 import Contas from './pages/Contas'
 import FluxoCaixa from './pages/FluxoCaixa'
 import Ajustes from './pages/Ajustes'
-import { cn } from './lib/utils'
+import MonthNav from './components/MonthNav'
+import { FIRST_MONTH } from './lib/finance'
+import { cn, monthKey, todayISO } from './lib/utils'
 import { useStore } from './store'
 
 export type Tab = 'inicio' | 'pagar' | 'receber' | 'fluxo' | 'ajustes'
@@ -20,6 +22,7 @@ const TABS: { id: Tab; label: string; icon: typeof LayoutDashboard }[] = [
 
 export default function App() {
   const [tab, setTab] = useState<Tab>('inicio')
+  const [month, setMonth] = useState(() => (monthKey(todayISO()) > FIRST_MONTH ? monthKey(todayISO()) : FIRST_MONTH))
 
   return (
     <div className="mx-auto flex min-h-screen max-w-2xl flex-col text-slate-900 dark:text-slate-100">
@@ -32,12 +35,17 @@ export default function App() {
           <p className="text-xs text-slate-400">Z-TEC Quarteirização Contábil · Amaral Contabilidade</p>
           <div className="mt-3">
             <CompanySelector />
+            {tab === 'inicio' && (
+              <div className="mt-2">
+                <MonthNav month={month} onChange={setMonth} />
+              </div>
+            )}
           </div>
         </div>
       </header>
 
       <main className="flex-1 px-4 pb-28 pt-4">
-        {tab === 'inicio' && <Dashboard onNavigate={setTab} />}
+        {tab === 'inicio' && <Dashboard month={month} onNavigate={setTab} />}
         {tab === 'pagar' && <Contas key="pagar" type="pagar" />}
         {tab === 'receber' && <Contas key="receber" type="receber" />}
         {tab === 'fluxo' && <FluxoCaixa />}
