@@ -66,6 +66,10 @@ export function statusOf(t: Transaction, today = todayISO()): TxStatus {
 
 export const sum = (list: Transaction[]) => list.reduce((acc, t) => acc + t.amount, 0)
 
+/** Cor do valor: verde para receita, vermelho para despesa. */
+export const amountColor = (type: 'pagar' | 'receber') =>
+  type === 'receber' ? 'text-green-700 dark:text-green-400' : 'text-red-600 dark:text-red-400'
+
 export function uid() {
   return Date.now().toString(36) + Math.random().toString(36).slice(2, 8)
 }

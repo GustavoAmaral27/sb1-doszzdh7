@@ -5,7 +5,7 @@ import CompanyBadge from '../components/CompanyBadge'
 import { useFiltered, useStore } from '../store'
 import { COMPANIES, COMPANY_IDS } from '../types'
 import { summarizeMonth } from '../lib/finance'
-import { cn, fmtDate, monthKey, monthLabel, money, statusOf, todayISO } from '../lib/utils'
+import { amountColor, cn, fmtDate, monthKey, monthLabel, money, statusOf, todayISO } from '../lib/utils'
 import type { Tab } from '../App'
 
 export default function Dashboard({ month, onNavigate }: { month: string; onNavigate: (t: Tab) => void }) {
@@ -140,7 +140,7 @@ export default function Dashboard({ month, onNavigate }: { month: string; onNavi
                     </div>
                   </div>
                   <div className="shrink-0 text-right">
-                    <p className="text-sm font-bold tabular-nums">
+                    <p className={cn('text-sm font-bold tabular-nums', amountColor(t.type))}>
                       {t.type === 'pagar' ? '−' : '+'} {money(t.amount)}
                     </p>
                     <p className="text-[11px] text-slate-500">{t.type === 'pagar' ? 'A pagar' : 'A receber'}</p>

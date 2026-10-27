@@ -4,7 +4,7 @@ import CashChart from '../components/CashChart'
 import CompanyBadge from '../components/CompanyBadge'
 import { useFiltered, useInitialBalance, useStore } from '../store'
 import { cashDate, signed } from '../lib/finance'
-import { cn, fmtDate, monthKey, monthLabel, money, shiftMonth, todayISO } from '../lib/utils'
+import { amountColor, cn, fmtDate, monthKey, monthLabel, money, shiftMonth, todayISO } from '../lib/utils'
 import type { Transaction } from '../types'
 
 type Mode = 'realizado' | 'previsto'
@@ -123,7 +123,7 @@ export default function FluxoCaixa() {
                         {company === 'todas' && <CompanyBadge id={t.company} />}
                         {!t.paid && <span className="shrink-0 text-[11px] text-slate-500">(previsto)</span>}
                       </span>
-                      <span className="shrink-0 tabular-nums">
+                      <span className={cn('shrink-0 font-semibold tabular-nums', amountColor(t.type))}>
                         {t.type === 'pagar' ? '−' : '+'} {money(t.amount)}
                       </span>
                     </li>
