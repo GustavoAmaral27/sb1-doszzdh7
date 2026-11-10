@@ -45,7 +45,8 @@ export function csvRows(buf: Buffer): Row[] {
   let text = buf.toString('utf8')
   if (text.includes('�')) text = buf.toString('latin1')
   text = text.replace(/^﻿/, '')
-  const sep = (text.split('\n', 1)[0].match(/;/g)?.length ?? 0) > 0 || !text.includes(',') ? ';' : ','
+  // No Brasil a vírgula é decimal, então o csv vem com ponto e vírgula; a 1ª linha (título) pode não ter separador.
+  const sep = text.includes(';') ? ';' : ','
   const rows: Row[] = []
   let row: string[] = []
   let cur = ''

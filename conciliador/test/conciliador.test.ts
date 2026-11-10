@@ -81,7 +81,8 @@ test('lê o razão: contas, saldo anterior e lançamentos', () => {
 })
 
 test('lê o razão em csv ANSI com ponto e vírgula', () => {
-  const text = RAZAO.map((r) => r.map((c) => `"${c}"`).join(';')).join('\r\n')
+  // A primeira linha tem uma célula só: o separador não pode ser deduzido dela.
+  const text = RAZAO.slice(1).map((r) => r.map((c) => `"${c}"`).join(';')).join('\r\n')
   const ledger = parseLedgerRows(csvRows(Buffer.from(text, 'latin1')))
   assert.equal(account(ledger, '8').entries[0].history, 'RECEBIMENTO NF 101 CLIENTE A')
   assert.equal(account(ledger, '8').entries[1].credit, 30000)
