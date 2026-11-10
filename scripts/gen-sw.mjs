@@ -44,9 +44,9 @@ self.addEventListener('fetch', (e) => {
   // Páginas: tenta a internet (para pegar atualizações) e, sem conexão, usa a cópia guardada.
   // 'no-cache' evita a cópia de até 10 min que o GitHub Pages deixa no navegador.
   if (req.mode === 'navigate') {
-    // O painel de MEIs (/contadores/) é outra página: não pode ocupar a cópia guardada do app.
-    if (new URL(req.url).pathname.includes('/contadores')) {
-      e.respondWith(fetch(req).catch(() => caches.match('./contadores/index.html')))
+    // O sistema para MEIs (/mei/) é outra página: não pode ocupar a cópia guardada do app.
+    if (new URL(req.url).pathname.includes('/mei')) {
+      e.respondWith(fetch(req).catch(() => caches.match('./mei/index.html')))
       return
     }
     e.respondWith(
