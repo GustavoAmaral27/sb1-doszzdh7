@@ -28,3 +28,17 @@ escolha este repositório e o branch `main`. O build (`npm run build`) e a pasta
 
 Abra o link no celular uma vez com internet e adicione à tela inicial. A partir daí o app abre e salva
 lançamentos sem internet. O `scripts/gen-sw.mjs` gera o service worker que guarda o app no aparelho.
+
+## Carteira MEI (painel para contadores)
+
+Segunda página do mesmo projeto, publicada em `/contadores/`:
+**https://gustavoamaral27.github.io/sb1-doszzdh7/contadores/**
+
+- **Página de vendas** com chamada para o painel
+- **Visão geral**: receita recorrente, recebido no mês, MEIs ativos, DAS pendentes e alertas (limite de R$ 81 mil, mensalidades e DAS em aberto, DASN a entregar)
+- **Mês**: baixa de DAS e mensalidade por cliente, faturamento mensal e lembrete pronto pelo WhatsApp
+- **Clientes**: cadastro dos MEIs (CNPJ, atividade, mensalidade, WhatsApp) e controle da DASN
+- **Ajustes**: salário mínimo usado no cálculo do DAS, backup/restauração e carteira de exemplo
+
+O código fica em `src/contadores/` e os dados são salvos no aparelho (`localStorage`), separados do app financeiro.
+O nome do produto é definido em `MARCA`, em `src/contadores/store.ts`.
