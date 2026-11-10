@@ -1,0 +1,21 @@
+{
+  "name": "conciliador-dominio",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Conciliação contábil automática para o Domínio Web: lê razão e extratos, concilia e gera o TXT de importação.",
+  "scripts": {
+    "executar": "tsx src/cli.ts",
+    "vigiar": "tsx src/cli.ts --vigiar 15",
+    "test": "tsx --test test/*.test.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "exceljs": "^4.4.0",
+    "tsx": "^4.19.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.2.2"
+  }
+}

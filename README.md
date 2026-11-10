@@ -9,6 +9,11 @@ App financeiro (PWA, instalável no celular) para as empresas **Z-TEC Quarteiriz
 
 Os dados ficam salvos no celular (funciona sem internet) e, com login em Ajustes, sincronizam com o Supabase (tabelas `fin_lancamentos` e `fin_config`, protegidas por RLS: cada usuário só vê as próprias linhas). Em cada lançamento vale a versão alterada por último.
 
+## Conciliador Domínio
+
+A pasta [`conciliador/`](conciliador/README.md) tem um robô separado do app: concilia razão e extratos
+das empresas clientes e gera o arquivo de lançamentos para importar no Domínio.
+
 ## Rodar
 
 ```bash

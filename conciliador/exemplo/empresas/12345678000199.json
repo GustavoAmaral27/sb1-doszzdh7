@@ -1,0 +1,17 @@
+{
+  "cnpj": "12.345.678/0001-99",
+  "name": "Empresa Exemplo Ltda",
+  "transitAccount": "999",
+  "bankAccounts": [
+    { "ledgerAccount": "8", "bankId": "341", "acctId": "12345-6" }
+  ],
+  "rules": [
+    { "match": "tarifa|tar\\.|pacote de servi", "account": "450", "direction": "saida" },
+    { "match": "iof", "account": "451", "direction": "saida" },
+    { "match": "rendimento|rend\\. aplic", "account": "320", "direction": "entrada" },
+    { "match": "darf|simples nacional|das ", "account": "210", "direction": "saida" }
+  ],
+  "dateWindowDays": 3,
+  "reconcilePrefixes": ["1", "2"],
+  "staleDays": 90
+}
