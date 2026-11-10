@@ -43,6 +43,38 @@ npm test
 Para rodar sem ninguém abrir: Agendador de Tarefas do Windows > Criar Tarefa > disparador "Ao iniciar" >
 ação `npm` com argumentos `run vigiar --prefix C:\caminho\conciliador -- C:\Conciliador\dados`.
 
+## MCP: consultar o Domínio pelo Claude
+
+`src/mcp.ts` é um servidor MCP **somente leitura**. Ele responde a partir do último razão que a Rotina
+Automática do Domínio Web exportou para `entrada/<CNPJ>/` (ou do último já arquivado em `processados/`).
+Toda resposta traz `fonte` e `exportado_em`: os dados são tão atuais quanto a última exportação.
+
+| Ferramenta | O que traz |
+|---|---|
+| `listar_empresas` | Empresas com dados e a data da última exportação |
+| `balancete` | Saldo anterior, débitos, créditos e saldo de cada conta |
+| `lancamentos` | Razão de uma conta ou busca por histórico, valor e período |
+| `composicao_saldo` | Itens em aberto que formam o saldo de uma conta |
+| `pendencias` | Pendências da última conciliação |
+
+Para ligar no Claude Desktop, em Ajustes > Desenvolvedor > Editar configuração (`claude_desktop_config.json`):
+
+```json
+{
+  "mcpServers": {
+    "dominio-web": {
+      "command": "npx",
+      "args": ["--prefix", "C:\\caminho\\conciliador", "tsx", "C:\\caminho\\conciliador\\src\\mcp.ts", "C:\\Conciliador\\dados"]
+    }
+  }
+}
+```
+
+No Claude Code: `claude mcp add dominio-web -- npx --prefix C:\caminho\conciliador tsx C:\caminho\conciliador\src\mcp.ts C:\Conciliador\dados`
+
+Ele não entra no Domínio Web nem usa sua senha: só lê os arquivos exportados. O que não está no razão
+(folha, fiscal, cadastros) não aparece.
+
 ## Ligando com o Domínio Web
 
 O Domínio não tem API para lançamentos contábeis (a API do Onvio só recebe notas fiscais e baixas de
